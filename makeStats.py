@@ -49,7 +49,6 @@ def mergeDicts(*dict_args):
   return res2
   
 # Opening and using the JSON file(s)
-#f = open("./facebook-bobjohn56/messages/"+nameConvo+"/message.json",'r')
 f = open("message.json",'r')
 print("Opening the message.json file")
 content = f.readlines() # Content of the whole file (but w/ newlines)
@@ -225,7 +224,48 @@ def printToFile(text, outFile):
   # Note: you will need to open the file before calling this function and don't forget to close it!!!
   print(text)
   outFile.write(text.encode("ascii", "ignore")+'\n')
+  
+def toDaysArray(ArrayDt):
+  return [dt.days+dt.seconds/86400. for dt in ArrayDt]
 
+def toDays(dt):
+  return dt.days+dt.seconds/86400.
+
+def totalSecondsToStr(seconds):
+  # Convert a number of seconds (e.g. 100000) into a nice representation (1 day, ...)
+  res = ""
+  if (seconds < 0):
+    res += "(Negative time) "
+  sec = abs(int(seconds))
+  yr = sec // 31536000
+  sec = sec % 31536000
+  if (yr > 0):
+    res = res + str(yr) + " year"
+    if (yr > 1):
+      res += 's'
+    res += ", "
+  day = sec // 86400
+  sec = sec % 86400
+  if (day > 0):
+    res = res + str(day) + " day"
+    if (day > 1):
+      res += 's'
+    res += ", "
+  hr = sec // 3600
+  sec = sec % 3600
+  if (hr > 0):
+    res = res + str(hr) + " hour"
+    if (hr > 1):
+      res += 's'
+    res += ", "
+  mn = sec // 60
+  sec = sec % 60
+  if (mn > 0):
+    res = res + str(mn) + " min, "
+  if (sec > 0):
+    res = res + str(sec) + " sec"
+  return res
+  
 ###### Using the functions for stats
 typ = j['thread_type']
 name = j['title']
@@ -249,7 +289,8 @@ lenMsgTotal = getTotalLenMsg(j['messages'], nbMsgTotal)
 nbMsg = 0
 lenMsg = 0
 silenceTime = dt.timedelta(0,0) # In (days,seconds)
-
+silenceArray = [] # Length of silences. Can be used to foresee a future interaction
+convoTimeSpent = dt.timedelta(0,0) # (days, seconds)
 # Reactions
 nbReac = 0
 nbMsgReac = 0
@@ -369,10 +410,16 @@ if(N==2):
     if (a-b > dt.timedelta(1,43200)): # There is more than 36h between two msgs
       idUser = listPeople.index(j['messages'][i-1]['sender_name']) # id of the guy who started the conv.
       convStartedBySender[idUser] += 1
+      silenceArray.append(a-b)
       if ('?' in j['messages'][i]['content']):
         # Now, we had an unanswered question = Ignored :(
         idUser2 = listPeople.index(j['messages'][i]['sender_name']) # id of the guy poor ignored
         ignoredMessagesPerUser[idUser2] += 1
+      else:
+        True
+    elif ((a-b) < dt.timedelta(0,300)):
+      # I suppose you are spending time on this conversation if there is less than 5 min between messages.
+      convoTimeSpent += (a-b)
 
 # Average length msg (Fig10)
 avgLengthPerSender = []
@@ -434,6 +481,7 @@ else:
     # Avoid a ZeroDivisionError: do not do the division by zero...
     printToFile("> "+listPeople[0]+" talked about himself "+str(nbJe[0])+" times and about his friend "+str(nbTu[0])+" times and said 'Du coup' "+str(nbDuCoup[0])+" times.", textFile)
     printToFile("> "+listPeople[1]+" talked about himself "+str(nbJe[1])+" times and about his friend "+str(nbTu[1])+" times and said 'Du coup' "+str(nbDuCoup[1])+" times.", textFile)
+  printToFile("> Overall, "+totalSecondsToStr(convoTimeSpent.total_seconds())+" were spent on this conversation (plus passive participation).", textFile)
 textFile.close()
 times.append(time.time())
 print("Process done in "+str(times[-1]-times[-2])+"+ sec")
@@ -693,6 +741,15 @@ width = .8
 plt.barh(listPeople, avgLengthPerSender, width, color='#00cc00')
 plt.title("Average length of each message ("+firstMsgShort+" -> "+lastMsgShort+")")
 plt.savefig("10-lengthOfMsg.png", dpi=100)
+plt.close()
+times.append(time.time())
+print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+#plt.figure(11)  ##############################################################
+print("Plotting Fig. 11: Length of long silences")
+plt.figure(figsize=(12,10))
+plt.plot(toDaysArray(silenceArray)[::-1])
+plt.title("Length of silences (in days -- "+firstMsgShort+" -> "+lastMsgShort+")")
+plt.savefig("11-lengthOfSilences.png", dpi=100)
 plt.close()
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
