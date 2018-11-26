@@ -1,3 +1,9 @@
+# Files created by thee program
+message.json
+0*.png
+Stats.txt
+1*.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
