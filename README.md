@@ -7,7 +7,7 @@ Step 3: Important: Use JSON as the format of your data. Otherwise, the program w
 Step 4: Wait until the archive is available (this can take between one and fifteen days).  
 
 After that, for this version, you need to put the Python program and the message log (file called "message.json") on the same directory.   
-This program is both compatible with Python 2.7 and Python 3.4 (normally - not tested).   
-To run the program: launch in a console python ./messagesStats.py and wait for a while (the graphs are generated in less than one minute).  
+This program is both compatible with Python 2.7 and Python 3.   
+To run the program: launch in a console python ./makeStats.py and wait for a while (the graphs are generated in less than two minutes).  
 
 More information will be provided later.

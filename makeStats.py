@@ -5,17 +5,23 @@
 # j: JSON turned into dictionnary. Ready to be used!
 
 # -*- coding: utf-8 -*-
-
 from __future__ import division # For old dudes still with Python 2.7
 import matplotlib
 matplotlib.use('Agg') # When you use Python Shell 
-import json
+try:
+  import simplejson as json
+except:
+  print("/!\ For better results, you should install simplejson")
+  import json
 import datetime as dt
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.colors as pltc
 import time
 import os
+import sys
+
+
 #from random import sample
 all_colors = [k for k,v in pltc.cnames.items()]
 all_colors2=["steelblue","indianred","darkolivegreen","olive","darkseagreen","pink","tomato","orangered","darkslategrey","greenyellow","burlywood","mediumspringgreen","chartreuse","dimgray","black","springgreen","orange","darkslategray","brown","dodgerblue","peru","lawngreen","chocolate","crimson","forestgreen","darkgrey","cyan","mediumorchid","darkviolet","darkgray","darkgreen","darkturquoise","red","deeppink","darkmagenta","gold","hotpink","firebrick","steelblue","indianred","mistyrose","darkolivegreen","olive","darkseagreen","pink","tomato","orangered","darkslategrey","greenyellow","burlywood","seashell","mediumspringgreen","chartreuse","dimgray","black","springgreen","orange","darkslategray","brown","dodgerblue","peru","lawngreen","chocolate","crimson","forestgreen","darkgrey","cyan","mediumorchid","darkviolet","darkgray","darkgreen","darkturquoise","red","deeppink","darkmagenta","gold","hotpink","firebrick"]
@@ -25,63 +31,38 @@ times = [time.time()] # For debug: how long each graph takes to load?
 # User-editable variables - What you can edit, without looking for ages in the code
 nbBins = 24                             # Subdiv per day Useful for Fig3. MUST be a multiple of 24 and dividable by 1440
                                         # Choose between: 24, 48, 72, 96, 120, 144, 240, 288, 360, 480, 720, 1440.
-startDate = dt.datetime(2000,6,1)       # When you want to start the stats. Good idea to take the last three months for example.
+startDate = dt.datetime(2000,12,1)       # When you want to start the stats. Good idea to take the last three months for example.
                                         # Format: dt.datetime(yyyy,m,d) - NO leading zeroes even if it is fancier with!
                                         # 
-timeZoneStartTime = 2                   # 1 for UTC+01:00 (Winter time in France) (+1 if DST)
-matplotlib.rcParams['font.size'] = 16
+timeZoneStartTime = 1                   # 1 for UTC+01:00 (Winter time in France) (+1 if DST)
+matplotlib.rcParams['font.size'] = 16   #
+widthImg = 1024                         # Width of the images on the HTML report. Soon, it will be set automatically ;)  
+encoding = 'latin1'                     # If there are accents (for French people), this encoding works fine. 
+decoding = 'utf-8'                      # To interpret accent words from json, use this: u'\xc3\x89'.encode('latin1').decode('utf-8')
 # Below this line: do NOT edit unless you know what you do!
 ####################
 startTimeStamp = (startDate - dt.datetime(1970,1,1)).total_seconds()-timeZoneStartTime*3600
 
-def mergeDicts(*dict_args):
-  """
-  Given any number of dicts, shallow copy and merge into a new dict,
-  precedence goes to key value pairs in latter dicts.
-  Adapted from https://stackoverflow.com/questions/38987/how-to-merge-two-dictionaries-in-a-single-expression#26853961
-  and https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
-  This function is a pain for the CPU...
-  """
-  res = []
-  for dictionary in dict_args:
-    for d in dictionary:
-      res.append(d)
-  # At that point, there may be duplicate entries in res
-  res2 = []
-  for d in res:
-    if d not in res2:
-      res2.append(d)
-  return res2
-  
 # Opening and using the JSON file(s)
-f = open("message.json",'r')
-print("Opening the message.json file")
-content = f.readlines() # Content of the whole file (but w/ newlines)
-line = ""
-f.close()
-for i in range(len(content)):
-  line += content[i]
-j = json.loads(line)    # Now, we have a great thing that can be used :)
-del content
-del line
-# Another file?
-# EDIT: painfully slow. Should not be used.
-try:
-  f2 = open("message2.json",'r')
-  print("Opening the message2.json file")
-  content2 = f2.readlines()
-  line2 = ""
-  f2.close()
-  for i in range(len(content2)):
-    line2 += content2[i]
-  j2 = json.loads(line2)
-  del line2
-  del content2
-  j['messages'] = mergeDicts(j2['messages'],j['messages']) #Remember: the 1st element is the most recent
-except IOError:
-  # Ok, no other message file to merge!
-  print("No other files to open!")
-  
+#f = open("message.json",'r')
+#content = f.readlines() # Content of the whole file (but w/ newlines)
+#line = "".encode(encoding)
+#f.close()
+#for i in range(len(content)):
+#  line += content[i]
+#j = json.loads(line)    # Now, we have a great thing that can be used :)
+#del content
+#del line
+
+print("Opening the message.json file")  
+if sys.version_info[0] == 2:
+  import io
+  with io.open('message.json', 'r') as f:
+    j = json.load(f)
+else:
+  with open('message.json', 'r', encoding=encoding) as f:
+    j = json.load(f)
+
 ###### Functions ######
 def addList(L1, L2):
   # Sums values of each member of a list
@@ -93,7 +74,28 @@ def addList(L1, L2):
     return res
   else:
     print("ERROR: arguments do not have same length!")
+    
+def prettyTxt(msg):
+  # Correct the unicode text to interpret accents properly
+  return msg.encode(encoding).decode(decoding)
 
+def prettyAllTxt():
+  # Returns nothing
+  global name
+  global nameFirst
+  global nameLast
+  global reacActor
+  global reacSender
+  global listPeople
+  name = prettyTxt(name)
+  nameFirst = prettyTxt(nameFirst)
+  nameLast = prettyTxt(nameLast)
+  reacActor = prettyTxt(reacActor)
+  reacSender = prettyTxt(reacSender)
+  listPeople = list(listPeople)
+  for i in range(len(listPeople)):
+    listPeople[i] = prettyTxt(listPeople[i])
+  
 def makeSubplot(N):
   # How to do subplots like a boss (nb, position, etc) ?
   # Check it here!
@@ -126,6 +128,7 @@ def makeSubplot(N):
 def getListPeople(data, numberPeople):
   ppl=[]
   for i in range(numberPeople):
+    # print ppl
     ppl += [data['participants'][i]['name']]
   return ppl
  
@@ -196,7 +199,7 @@ def findQuarters(msgPerDayX, msgPerDayY):
 
 def hourPost(hourMsg, nbBins):
   # When are messages posted?
-  # hourMsg are dates under the form datetime.datetime(2001,31,3,3,4,1,10101)
+  # hourMsg are dates under the form datetime.datetime(2001,2,23,3,46,56,10101)
   hr = [0]*24
   hrDetailed = [0]*nbBins # one segment every 15 min
   for h in hourMsg:
@@ -235,8 +238,8 @@ def nbMonthlyMsg(hourMsgD):
 def printToFile(text, outFile):
   # When you want to print AND to save text, this function is your savior!
   # Note: you will need to open the file before calling this function and don't forget to close it!!!
-  print(text)
-  outFile.write(text.encode('utf-8')+'\n'.encode('utf-8'))
+  print(text.encode(encoding))
+  outFile.write(text.encode(encoding)+'\n'.encode(encoding))
   
 def toDaysArray(ArrayDt):
   return [dt.days+dt.seconds/86400. for dt in ArrayDt]
@@ -292,34 +295,84 @@ def makeAutopct(values):
       return ""
   return my_autopct
 
+def addToCsv(txt):
+  if sys.version_info[0] == 2: # If you have Python 2
+    try:
+      tmp = txt.encode(encoding)
+    except AttributeError:
+      tmp = str(txt)  
+    separator = ';'.encode(encoding)    
+    return tmp + separator
+  else: 
+    separator = u';'    
+    return str(txt) + separator
+  
 def sendToCsv():
-  def add(txt):
-    res = res + txt + separator
-    return
-  separator = ';'    
+  csvName = "stats.csv"
+  res = ""
   # To make global analysis: we will save interesting values to a CSV. 
   # If it already exists, apppend data in the next line.
-  csvName = "stats.csv"
-  res = "" # Text to add
-  header = ("Type;Name;Start_Date;Start_Who;End;NbPart_curr;NbPart_former;NbPart_Total;" + 
-            "fefe")
-  add(typ)              # Type (Regular or RegularGroup)  
-  add(name)             # Name of the conv
-  add(firstMsg)         # Date of the 1st msg
-  add(nameFirst)        # Who sent the 1st msg
-  add(lastMsg)          # Date of the last msg
-  add(nameLast)         # Who sent the last msg
   
+  header = ("Type;Name;Start_Date;Start_Who;End_Date;End_Who;NbPart_curr;NbPart_total;" + 
+            "")
+  res += addToCsv(str(typ))         # Type (Regular or RegularGroup)  
+  res += addToCsv(name)             # Name of the conv
+  res += addToCsv(firstMsg)         # Date of the 1st msg
+  res += addToCsv(nameFirst)        # Who sent the 1st msg
+  res += addToCsv(lastMsg)          # Date of the last msg
+  res += addToCsv(nameLast)         # Who sent the last msg
+  res += addToCsv(N)                # NbPart_curr
+  res += addToCsv(N2)               # NbPart_total
   # TODO
-  with open(csvName, 'a') as csvFile:
-    csvFile.write('\n')
-    csvFile.write(res)
+  if (sys.version_info[0] == 2):
+    with open(csvName, 'ab') as csvFile: # a for append, b for bytes mode
+      csvFile.write('\n')
+      csvFile.write(res)  
+  else: # With Python 3, you must use convert text to bytes to add, hence the .encode()
+    with open(csvName, 'ab') as csvFile: # a for append, b for bytes mode
+      csvFile.write('\n'.encode())
+      csvFile.write(res.encode())
 
 def removeFile(fileName):
   with open(fileName,'w') as f: 
     f.write("This file will be removed") # Erase the figure, if it existed before
   if os.path.isfile(fileName):
     os.remove(fileName)
+
+def saveReportToHtml():
+  # Create a HTML file with all the information
+  templateLoader = jinja.FileSystemLoader(searchpath="./")
+  templateEnv = jinja.Environment(loader=templateLoader)
+  
+  #Insertion of images (miniature or full)
+  try:
+    # If we can create miniatures for a better webpage
+    from PIL import Image
+    # Resize images and add '_mini' after (TODO)
+    sizeImg="_mini"
+  except:
+    # If PIL is not installed, I will not use miniatures but the full img (For tests only!!!)
+    sizeImg=""
+  sizeImg="" # TEMPorary (TODO: correct that)
+  if(typ == "RegularGroup"):
+    TEMPLATE_FILE = "templateGroup.html"
+  else:
+    TEMPLATE_FILE = "templatePrivate.html"
+  template = templateEnv.get_template(TEMPLATE_FILE)
+  
+  outputText = template.render(encoding=encoding, sizeImg=sizeImg, widthImg=widthImg, name=name, N=N, N2=N2, 
+                               dateCreation= dt.datetime.isoformat(dt.datetime.now()), 
+                               firstMsg=firstMsg, lastMsg=lastMsg, nameFirst=nameFirst, nameLast=nameLast, 
+                               firstMsgShort=firstMsgShort, lastMsgShort=lastMsgShort,
+                               silenceTime=totalSecondsToStr(silenceTime.total_seconds()),
+                               nbMsg=nbMsg, avgNbMsg=decimizeStr(1.0*nbMsg/(1.0*N), 2),
+                               Q2=Q2, Q1=Q1, Q3=Q3, nbConv=sum(convStartedBySender),
+                               nbMsgReac=nbMsgReac, percentMsgReac=decimizeStr(100*nbMsgReac/nbMsg,1), nbReac=nbReac, reacPerMsg=decimizeStr(nbReac/nbMsgReac, 2),
+                               pareto0=paretoRes[0], pareto1=paretoRes[1], pareto2=paretoRes[2], lenMsgConv=decimizeStr(nbMsg/sum(convStartedBySender), 1), 
+                               totalTimeConv=totalSecondsToStr(convoTimeSpent.total_seconds()))
+  html_file = open('stats.html', 'wb')
+  html_file.write(outputText.encode(encoding))
+  html_file.close()
 
 ###### Using the functions for stats
 typ = j['thread_type']
@@ -393,7 +446,7 @@ for m in j['messages']:
         idUser = unk
       else:
         # Oh, just discovered a removed account. Let's count it!
-        listPeople.append("UNKNOWN")
+        listPeople.append(u"UNKNOWN")
         nbMsgPart.append(1)
         reacReceivedPerSender.append([0]*8)
         reacSentPerActor.append([0]*8)
@@ -519,6 +572,10 @@ nbMsgPart, listPeople, reacSentPerActor, reacSent, reacReceived, reacReceivedPer
 msgPerDayX, msgPerDayY = nbDailyMsg(hourMsgD)
 msgPerMonthX, msgPerMonthY = nbDailyMsg(hourMsgMo)
 times.append(time.time())
+
+# Correcting the encoding before displaying everything
+prettyAllTxt()
+
 print("Process done in "+str(times[-1]-times[-2])+"+ sec")
 
 times.append(time.time())
@@ -534,15 +591,15 @@ else:
 # Generic information
 printToFile("> The 1st message has been written on "+firstMsg+" by "+nameFirst+".", textFile)
 printToFile("> Last message saved: written on "+lastMsg+" by "+nameLast+".", textFile)
-printToFile("> Longest silence: "+str(silenceTime.days) +" days, "+str(silenceTime.seconds//3600)+" hours and "+str(decimize((silenceTime.seconds % 3600)/60.0,1))+" minutes.", textFile)
+printToFile("> Longest silence: "+totalSecondsToStr(silenceTime.total_seconds()), textFile)
 printToFile("> "+str(nbMsg)+" messages have been written, making an average of "+decimizeStr(1.0*nbMsg/(1.0*N), 2)+" messages per participant.", textFile)
 Q1, Q2, Q3 = findQuarters(msgPerDayX, msgPerDayY) # Dates when quarters have been reached
 printToFile("> Half of all messages have been written before/after "+str(Q2), textFile)
 printToFile("> Messages are in average "+decimizeStr(lenMsg/nbMsg, 1)+" characters long.", textFile)
+paretoRes = pareto(nbMsgPart)
 if (typ=="RegularGroup"): 
   # If there is more than two participants
   printToFile("> Among the "+str(nbMsgReac)+" messages with reactions ("+decimizeStr(100*nbMsgReac/nbMsg,1)+"%), participants have reacted "+str(nbReac)+" times ("+decimizeStr(nbReac/nbMsgReac, 2)+" times per message).", textFile)
-  paretoRes = pareto(nbMsgPart)
   printToFile("> Pareto: "+paretoRes[0]+"% of users posted more than "+paretoRes[1]+"% of messages ("+paretoRes[2]+"%).", textFile)
 else:
   # Private conv
@@ -563,6 +620,10 @@ else:
 textFile.close()
 times.append(time.time())
 print("Process done in "+str(times[-1]-times[-2])+"+ sec")
+
+def sortList(byThisList, reverse):
+  byThisList, reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(byThisList, reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=reverse)) # Get a clean ranking
+
 ### Graphes     ###############################################################
 #plt.figure(1)  ###############################################################
 print("Plotting Fig. 1: participants.")
@@ -604,9 +665,9 @@ bars = ax.bar(theta, hr[0], width=2*np.pi/H, align='edge') # Width = 2pi divided
 ax.set_xticks(theta)
 ax.set_xticklabels(range(len(theta)), fontsize=15)
 for (a,b) in zip(theta, hr[0]):
-  plt.text(a+(2*np.pi/24/2.), max(hr[0])*1.1, str(b), fontsize=20, color="red" if b>0 else 'gray', weight='bold', ha='center',va='center')
+  plt.text(a+(2*np.pi/24/2.), max(hr[0])*1.1, str(b), fontsize=20, color="red" if b>0 else 'white', weight='bold', ha='center',va='center')
 ax.yaxis.grid(True)
-plt.title("Hourly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+" - radar graph)\nTotal = "+str(sum(hr[0]))+" msg!")
+plt.title("Hourly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+" - radar graph)\nTotal = "+str(sum(hr[0]))+" msg")
 plt.savefig("02b-hourlyRadarGraph.png", dpi=100, bbox_inches='tight')
 plt.close()
 times.append(time.time())
@@ -628,7 +689,7 @@ if (N < 30):
     # Plotting for each user
     bars = ax.bar(theta, hrPerSender[i], width=2*np.pi/H, align='edge', color=col) # Width = 2pi divided by nbr of bins (24)
     for (a,b) in zip(theta, hrPerSender[i]):
-      plt.text(a+(2*np.pi/24/2.), max(hrPerSender[i]), str(b), fontsize=10, color="black", weight='bold')
+      plt.text(a+(2*np.pi/24/2.), max(hrPerSender[i]), str(b), fontsize=10, color="black" if b>0 else 'white', weight='bold')
     ax.yaxis.grid(True)
     if(lenMsgPerSender[i]>0 and nbMsgPart[i] > 0):
       plt.title("Hourly messages from "+listPeople[i]+"\nSum = "+str(sum(hrPerSender[i]))+" msg / Average length of msg: "+decimizeStr(lenMsgPerSender[i]/nbMsgPart[i], 1)+" characters.")
@@ -697,7 +758,7 @@ ax.set_xticks(theta)
 xLabels = np.linspace(0,24-(24./nbBins),nbBins)
 ax.set_xticklabels(decimizeList(xLabels, 1), fontsize=12)
 ax.yaxis.grid(True)
-plt.title("Number of empty bins (no message during moment): "+str(hr[1].count(0))+" empty bins out of "+str(nbBins)+".\nTotal = "+str(sum(hr[0]))+" msg!", fontsize=40)
+plt.title("Number of empty bins: "+str(hr[1].count(0))+" / "+str(nbBins)+".\nTotal = "+str(sum(hr[0]))+" msg!", fontsize=40)
 plt.savefig("04-emptyMoments.png", dpi=100, bbox_inches='tight')
 plt.close()
 times.append(time.time())
@@ -728,7 +789,7 @@ plt.figure(figsize=(12,12))
 plt.grid(True)
 for (a,b) in zip(msgPerMonthX, msgPerMonthY):
   if(b>0): # For better visibility, we hide values below 1
-    plt.text(a+dt.timedelta(days=7), b+3, str(b), fontsize=16, weight='bold')
+    plt.text(a+dt.timedelta(days=7), b+.5 if b>10 else 1.05*b, str(b), fontsize=16, weight='bold')
 #plt.xticks(np.arange(msgPerDayX[0], msgPerDayX[-1],5))
 # Plotting quarter labels (+text)
 plt.plot([Q1, Q2, Q3], [0,0,0], 'rD')
@@ -831,7 +892,7 @@ if (N != 0): # In fact, we can do that for any conversation!
   nbHeart, convStartedBySender, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup = zip(*sorted(zip(nbHeart, convStartedBySender, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup), reverse=False)) # Get a clean ranking
   ax.pie(nbHeart, labels=listPeople, autopct=makeAutopct(nbHeart), rotatelabels =True, startangle=90)
   plt.axis('equal')
-  plt.title("How many hearts <3 ?\n       Total = "+str(sum(nbHeart))+".")
+  plt.title("How many hearts <3 ?\n       Total = "+str(sum(nbHeart)))
   plt.savefig("08-behaviorStats.png", dpi=100, bbox_inches='tight')
   plt.close()
 else:
@@ -864,18 +925,22 @@ plt.close()
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 #plt.figure(11)  ##############################################################
-print("Plotting Fig. 11: Du coup...")
-nbDuCoup, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(nbDuCoup, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=True)) # Get a clean ranking
-endList=N2-nbDuCoup.count(0) # We strip away zero values by setting the starting point of our graph
-plt.figure(figsize=(15, min(600, 8+endList/2)))
-plt.grid(axis='x')
-width = .8
-plt.barh(listPeople[:endList], nbDuCoup[:endList], width, color='#00dddd')
-for i in range(endList):
-  plt.text(0.1*max(nbDuCoup), i, str(nbDuCoup[i]), ha='center',va='center')
-plt.title("Du coup, combien de 'Du coup'? ("+firstMsgShort+" -> "+lastMsgShort+")\nTotal = "+str(sum(nbDuCoup)))
-plt.savefig("11-DuCoup.png", dpi=100, bbox_inches='tight')
-plt.close()
+if(sum(nbDuCoup) > 0):
+  print("Plotting Fig. 11: Du coup...")
+  nbDuCoup, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(nbDuCoup, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=True)) # Get a clean ranking
+  endList=N2-nbDuCoup.count(0) # We strip away zero values by setting the starting point of our graph
+  plt.figure(figsize=(15, min(600, 8+endList/2)))
+  plt.grid(axis='x')
+  width = .8
+  plt.barh(listPeople[:endList], nbDuCoup[:endList], width, color='#00dddd')
+  for i in range(endList):
+    plt.text(0.1*max(nbDuCoup), i, str(nbDuCoup[i]), ha='center',va='center')
+  plt.title("Du coup, combien de 'Du coup'? ("+firstMsgShort+" -> "+lastMsgShort+")\nTotal = "+str(sum(nbDuCoup)))
+  plt.savefig("11-duCoup.png", dpi=100, bbox_inches='tight')
+  plt.close()
+else:
+  print("Skipping Fig. 11: No 'Du coup' said")
+  removeFile("11-duCoup.png")  
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 #plt.figure(12)  ##############################################################
@@ -885,6 +950,15 @@ print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 ###############################################################################
 # For further analysis: I will do a .csv file for comparing other conversations :) 
 # TODO
-# sendToCsv()
+sendToCsv()
+try:
+  if (sys.version_info[0] == 2):
+    import jinja
+  else:
+    import jinja2 as jinja
+  saveReportToHtml()
+except ModuleNotFoundError:
+  print("/!\ Jinja lib is not found. You should install it with 'pip install jinja' (no need to have admin rights)")
+
 print("~ Analysis done with love in "+decimizeStr(times[-1]-times[0], 3)+" seconds! ~")
 ###### END OF PROGRAM ######

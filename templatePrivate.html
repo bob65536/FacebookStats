@@ -1,0 +1,168 @@
+<!-- Note about this page ~
+This is a template for displaying our information about conversations analyzed. 
+By uploading it (with the right files), you can make a great professional-looking 
+statistics. Done on my spare time, between two refreshes of Facebook, five pages scollled on Reddit,
+a few GIF on The Coding Life and two unanswered messages to friends on Messenger.--> 
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="{{encoding}}">
+<!-- If you want to use the font stored by Google : 
+<style> @import 'https://fonts.googleapis.com/css?family=Ubuntu'; </style>
+-->
+	<title>{{name}} | MakeStats</title>
+</head>
+
+<body>
+	<h2>{{name}} | Analysis</h2>
+	<h6>Done with love with MakeStats and ready to share it with everyone!</h6>
+	<p> <class="date">Report made on {{dateCreation}}</class="date"></p>
+	<hr />
+
+	<h3>Some facts</h3>
+	After this, you will know everything about [<i>{{name}}</i>] <br />
+  <p><i>Data gathered from <b>{{firstMsgShort}}</b> to <b>{{lastMsgShort}}</b>.</i> <br />
+  Note: you can click on each image to have it on full size.
+
+  <h3>General information</h3>
+    <h4>How it started</h4>
+      <p>The 1st message has been written on {{firstMsg}} by <i>{{nameFirst}}</i>. <br />
+      Last message saved: written on {{lastMsg}} by <i>{{nameLast}}</i>.</p><br />
+    <h4>A question of time</h4>
+      Overall, <i>{{totalTimeConv}}</i> were spent on this conversation. <br />
+      <class="lowImportance">Longest silence: <i>{{silenceTime}}</i></class="lowImportance">.<br />
+      Half of all messages have been written on <b>{{Q2}}</b>. For more information, go to the <a href="#s3">Section 3</a>.
+    <h4>A sizeable conversation</h4>
+      <b>{{nbMsg}}</b> messages have been written, making an average of <b>{{avgNbMsg}}</b> messages per participant.<br />
+    <hr />
+    <h3>Figures</h3>
+      <h6>My favorite part ;) </h6>
+
+      <h4>Section 1: Participants</h4>
+      <div id="s1"></div>
+        <p>Who participated in this conversation? Look at this. <br />
+        If you prefer a repartition depending of the number of characters, jump to <a href="#s5">section 5</a>.
+        </p>
+        <figure>
+          <a href="./01-participants.png"><img src="./01-participants{{sizeImg}}.png" alt="Participants of the conversation" width={{widthImg}}> </a>
+          <figcaption>Fig. 1: Participants of the conversation</figcaption>
+        </figure>
+      
+      <hr />
+      <h4>Section 2: Hourly Repartition</h4>
+      <div id="s2"></div>
+        <p>You can find below the most active hours on this conversation. If you wish a more precise graph, feel free to check it <a href="./03a-preciseHourUse.png">here</a>. <br />
+        <i>Note: If the link is dead, it means you selected 24 bins on the script, so it is exactly the same thing as Fig 2.</i>
+        <figure>
+          <a href="./02a-hourUse.png"><img src="./02a-hourUse{{sizeImg}}.png" alt="Graph showing the number of messages hour by hour" width={{widthImg}}> </a>
+          <figcaption>Fig. 2a: Participation hour-by-hour</figcaption>
+        </figure></p>
+        <p><i>Here is another way to represent this data. With the same conditions, more precise repartition is available <a href="./03b-preciseRadarGraph.png">here</a></i>.
+        <figure>
+          <a href="./02b-hourlyRadarGraph.png"><img src="./02b-hourlyRadarGraph{{sizeImg}}.png" alt="Radar graph showing the number of messages hour by hour" width={{widthImg}}></a>
+          <figcaption>Fig. 2b: Participation hour-by-hour (Radar graph)</figcaption>
+        </figure> </p>
+        <p><i>Here is a radar graph for your friend and you.</i>
+        <figure>
+          <a href="./02c-hourlyRadarGraphPerUser.png"><img src="./02c-hourlyRadarGraphPerUser{{sizeImg}}.png" alt="Sorry, this graph is not available" width={{widthImg}}></a>
+          <figcaption>Fig. 2c: Participation hour-by-hour per user</figcaption>
+        </figure> </p>
+        If you wish to stress out inactive moments of the day, <a href="./04-emptyMoments.png">here you go</a>!
+      
+      <hr />
+      <h4>Section 3: Daily & Monthly repartitions</h4>
+      <div id="s3"></div>
+        <p>This section allows you to see your activity with a longer term. <br />
+        <figure>
+          <a href="./05a-dateMsgPerDay.png"><img src="./05a-dateMsgPerDay{{sizeImg}}.png" alt="Daily repartition of the messages" width={{widthImg}}></a>
+          <figcaption>Fig. 3a: Daily repartition of the messages</figcaption>
+        </figure> </p>
+        <p>You can see three diamonds on the bottom of these graphes. Each diamond represents a quarter. Between each diamond, a quarter of messages have been written. <br />
+        Interpretation: 
+        <ul>
+          <li>Half of all messages have been written before/after <b>{{Q2}}</b>. </li>
+          <li>Also, you wrote one quarter of all messages between the <abbr title={{firstMsgShort}}>beginning of the conversation</abbr> and <b>{{Q1}}</b></li>
+          <li>The last quarter spans between <b>{{Q3}}</b> and <abbr title={{lastMsgShort}}>now</abbr>.</li>
+        </ul></p>
+        <p><i>If lines are too thin, let's take a step backwards and check the monthly repartition.</i>
+        <figure>
+          <a href="./05b-dateMsgPerMonth.png"><img src="./05b-dateMsgPerMonth{{sizeImg}}.png" alt="Monthly repartition of the messages" width={{widthImg}}> </a>
+          <figcaption>Fig. 3b: Monthly repartition of the messages</figcaption>
+        </figure> </p>
+
+      <hr />
+      <h4>Section 4: Reactions</h4>
+      <div id="s4"></div>
+        <p>On almost all conversations, the receiver(s) may react to messages, in different ways. The next graphes will show you how!<br />
+        <b>Fun fact: {{nbMsgReac}} messages ({{percentMsgReac}}%) led to a reaction. <br /></b>
+        <figure>
+          <a href="./06a-reacSent.png"><img src="./06a-reacSent{{sizeImg}}.png" alt="Reactions sent (if empty: no one reacted)" width={{widthImg}}> </a>
+          <figcaption>Fig. 4: Reactions sent</figcaption>
+        </figure> </p>
+
+      <hr />
+      <h4>Section 5: Length of messages</h4>
+      <div id="s5"></div>
+        <p>Size matters. <del>Your wife told you so.</del> In this section, we will see how many times you hit your poor keyboard for discussing with your friend <i>{{name}}</i>.
+        <br />
+        <figure>
+          <a href="./07-lenMsg.png"><img src="./07-lenMsg{{sizeImg}}.png" alt="Participation by characters written" width={{widthImg}}> </a>
+          <figcaption>Fig. 5a: Participation <i>by characters written</i></figcaption>
+        </figure> </p>
+        <p>Why such a big difference with <a href="#s1">the first figure</a>? Because each participant sends shorter or longer messages. <br />
+        Here is a proof.
+        <figure>
+          <a href="./09-lengthOfMsg.png"><img src="./09-lengthOfMsg{{sizeImg}}.png" alt="Average length of messages" width={{widthImg}}> </a>
+          <figcaption>Fig. 5b: Average length of messages</figcaption>
+        </figure> </p>
+
+      <hr />
+      <h4>Section 6: Starters and Lovers</h4>
+      <div id="s6"></div>
+        <p>If you are with someone (wowowo, relax! It is just an example!) and you start questioning the reciprocity of your relationship, this section <strong>might</strong> help you (but keep a critical point of view, please) -- see end note. 
+        <br />
+        <figure>
+          <a href="./08-behaviorStats.png"><img src="./08-behaviorStats{{sizeImg}}.png" alt="Starters and nuber of hearts" width={{widthImg}}> </a>
+          <figcaption>Fig. 6: How often do you start conversations and who sends hearts?</figcaption>
+        </figure> </p>
+        <p><i>How long are your messages on average before ending? A big figure may underline a long and interesting conversation.</i><br />
+        In this case, each one of the {{nbConv}} coversations lasted <b>{{lenMsgConv}}</b> messages (on average) before dying.</p>
+
+      <hr />
+      <h4>Section 7: Misc</h4>
+      <div id="s7"></div>
+        <p>Here, I listed some interesting graphes which do not fit in any section. <br />
+        In there, you will find info about:
+        <ul>
+          <li>Length of silences (>1 day)</li>
+          <li>How many 'Du coup' are said</li>
+          <li>And other figures... one day.</li>
+        </ul></p>
+        <p><i>This graph shows the evolution of silence periods between conversations (above 1 day). If the line is rising, this might show a loss of interest over time...<br />
+        On the other hand, if dates are outdated, either no messages are sent since a long time or conversation never stops running.</i>
+        <figure>
+          <a href="./10-lengthOfSilences.png"><img src="./10-lengthOfSilences{{sizeImg}}.png" alt="Length of silences" width={{widthImg}}> </a>
+          <figcaption>Fig. 7a: Length of silences?</figcaption>
+        </figure> </p>
+
+        <p>Du coup<i> (or 'so...') is a French expression said too much times. So much that some might be bothered by this expression. </i>Du coup, <i>how often do participants said that?</i>
+        <figure>
+          <a href="./11-duCoup.png"><img src="./11-duCoup{{sizeImg}}.png" alt="[[If you read this, no one said 'Du coup' in this conversation.]]" width={{widthImg}}> </a>
+          <figcaption>Fig. 7b: Du coup, how often do participants said 'Du coup'?</figcaption>
+        </figure> </p>
+      <hr />
+    <h3>Notes</h3>
+    <p>If you read this, it means this report have been interesting. Thank you for having read everything :) <br />
+    Even if the data are a direct interpretation of your logs, do not take that for an absolute truth. <br />
+    Here are points that might alter these information (and notes):
+    <ul>
+      <li>Only data from Messenger are processed. So, other interaction (SMS, phone calls, meetings, etc) are not included here.</li>
+      <li>You can merge data from other backups. But if the name of the conversation changed, you may have moments without data.</li>
+      <li>One data can have different meanings. Keep a critical point of view on the results.</li>
+      <li>If you do something bad with these results, I won't be held responsible. </li>
+      <li>Other functionalities will be added. Don't forget to check regularly my <a href="https://github.com/bob65536">GitHub</a> for bugfixes.</li>
+    </ul></p>
+    <br /><br /><i>Last update of this template: 2018-12-27 01:25 // Done with love <small>and with the [F5] key</small> by Bob Sleigh // Report generated on {{genTime}} seconds.</i>
+</body>
+</html>
