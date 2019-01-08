@@ -28,18 +28,18 @@ times = [time.time()] # For debug: how long each graph takes to load?
 
 ####################
 # User-editable variables - What you can edit, without looking for ages in the code
-nbBins = 24                             # Subdiv per day Useful for Fig3. MUST be a multiple of 24 and dividable by 1440
+nbBins = 96                             # Subdiv per day Useful for Fig3. MUST be a multiple of 24 and dividable by 1440
                                         # Choose between: 24, 48, 72, 96, 120, 144, 240, 288, 360, 480, 720, 1440.
-startDate = dt.datetime(2018,1,1)       # When you want to start the stats. Good idea to take the last three months for example.
-endDate = dt.datetime(2019,1,1)         # Format: dt.datetime(yyyy,m,d) - NO leading zeroes even if it is fancier with!
-                                        # 
-timeZoneStartTime = 1                   # 1 for UTC+01:00 (Winter time in France) (+1 if DST)
+startDate = dt.datetime(2000,1,1)       # When you want to start the stats. Good idea to take the last three months for example.
+endDate = dt.datetime(2099,1,1)         # Format: dt.datetime(yyyy,m,d) - NO leading zeroes even if it is fancier with!
+                                        # Not yet implemented
+timeZoneStartTime = 1                   # 1 for UTC+01:00 (Winter time in France) (add 1 if DST)
 matplotlib.rcParams['font.size'] = 16   #
 widthImg = 800                          # Width of the images on the HTML report. Soon, it will be set automatically ;)  
 encoding = 'latin1'                     # If there are accents (for French people), this encoding works fine. 
 decoding = 'utf-8'                      # To interpret accent words from json, use this: u'\xc3\x89'.encode('latin1').decode('utf-8')
 pathRes = "resAnalysis"                 # In the end, we will have ~25 files: get them in a folder
-customTitle=u"2018 with... xxx"     # The title you want (add xxx for inserting name of the conversation)
+customTitle=u"Stats of xxx"     # The title you want (add xxx for inserting name of the conversation)
 # Below this line: do NOT edit unless you know what you do!
 ####################
 startTimeStamp = (startDate - dt.datetime(1970,1,1)).total_seconds()-timeZoneStartTime*3600
@@ -283,6 +283,31 @@ def totalSecondsToStr(seconds):
     res = res + str(sec) + " sec"
   return res
 
+def totalSecondsToStrShort(seconds):
+  # Convert a number of seconds (e.g. 100000) into a nice representation (2d 14:54:08)
+  res = ""
+  if (seconds < 0):
+    res += "-"
+  sec = abs(int(seconds))
+  yr = sec // 31536000
+  sec = sec % 31536000
+  if (yr > 0):
+    res = res + str(yr) + "y "
+  day = sec // 86400
+  sec = sec % 86400
+  if (day > 0):
+    res = res + str(day) + "d "
+  hr = sec // 3600
+  sec = sec % 3600
+  if (hr > 0):
+    res = res + str(hr) + ":"
+  # Example: 5y 55d 5:12:03 or 15:43
+  mn = sec // 60
+  sec = sec % 60
+  res = res + str(mn).zfill(2) + ":" + str(sec).zfill(2) 
+  return res
+
+
 def makeAutopct(values):
   # Thanks to https://stackoverflow.com/questions/6170246/how-do-i-use-matplotlib-autopct
   def my_autopct(pct):
@@ -394,15 +419,17 @@ def saveReportToHtml():
     # No names so no need to do anything :) 
     customTitle=customTitle
   outputText = template.render(customTitle=customTitle, encoding=encoding, sizeImg=sizeImg, widthImg=widthImg, name=name, N=N, Nout=N2-N, 
-                               dateCreation= dt.datetime.now().strftime("%Y-%m-%d at %H:%M"), 
+                               dateCreation= dt.datetime.now().strftime("%Y-%m-%d at %H:%M"), ageConv=ageConv, 
                                firstMsg=firstMsgPretty, lastMsg=lastMsgPretty, nameFirst=nameFirst, nameLast=nameLast, 
-                               firstMsgShort=firstMsgShort, lastMsgShort=lastMsgShort,
+                               firstMsgShort=firstMsgShort, lastMsgShort=lastMsgShort, lenMsg=lenMsg,
                                silenceTime=totalSecondsToStr(silenceTime.total_seconds()),
                                nbMsg=nbMsg, avgNbMsg=decimizeStr(1.0*nbMsg/(1.0*N), 2),
                                Q2=Q2, Q1=Q1, Q3=Q3, nbConv=sum(convStartedBySender),
-                               nbMsgReac=nbMsgReac, percentMsgReac=decimizeStr(100*nbMsgReac/nbMsg,1), nbReac=nbReac, reacPerMsg=decimizeStr(nbReac/nbMsgReac, 2),
+                               nbMsgReac=nbMsgReac, percentMsgReac=decimizeStr(100*nbMsgReac/nbMsg,1), nbReacSum=nbReacSum, reacPerMsg=decimizeStr(nbReacSum/nbMsgReac, 2),
+                               reac0=reacNb[0], reac1=reacNb[1], reac2=reacNb[2], reac3=reacNb[3], reac4=reacNb[4], reac5=reacNb[5], reac6=reacNb[6], reac7=str(sum(reacNb)-sum(reacNb[:7])),
                                pareto0=paretoRes[0], pareto1=paretoRes[1], pareto2=paretoRes[2], lenMsgConv=decimizeStr(nbMsg/sum(convStartedBySender), 1), 
-                               totalTimeConv=totalSecondsToStr(convoTimeSpent.total_seconds()),
+                               totalTimeConv=totalSecondsToStr(convoTimeSpent.total_seconds()), totalTimeConvShort=totalSecondsToStrShort(convoTimeSpent.total_seconds()), 
+                               nbHeart=sum(nbHeart), nbDuCoup=sum(nbDuCoup), avgLengthOverall=avgLengthOverall,
                                genTime=decimizeStr(times[-1]-times[0], 3))
   html_file = open(pathRes+'/stats.html', 'wb')
   html_file.write(outputText.encode(encoding))
@@ -435,7 +462,7 @@ silenceTime = dt.timedelta(0,0) # In (days,seconds)
 silenceArray = [[],[]] # Length of silences. Can be used to foresee a future interaction
 convoTimeSpent = dt.timedelta(0,0) # (days, seconds)
 # Reactions
-nbReac = 0
+nbReacSum = 0
 nbMsgReac = 0
 reacMean =["Love","Haha","Wow!","Sad ","Grrr"," +1 "," -1 ","Misc"]
 reacHex  =["98 8d","98 86","98 ae","98 a2","98 a0","91 8d","91 8e","00 00"]
@@ -445,7 +472,7 @@ heartHex = "e2 9d a4" # This variable represents a heart
 # Stats of participation / Analyze per message
 for m in j['messages']:
   # Date filter
-  if (m['timestamp_ms']/1000. >= startTimeStamp and m['timestamp_ms']/1000. < endTimeStamp):
+  if (m['timestamp_ms']/1000. >= startTimeStamp):
     # Count number of messages
     nbMsg += 1
     lenMsg += getLenMsg(m)
@@ -528,7 +555,7 @@ for m in j['messages']:
     # Reactions!  
     try:
       reacs = m['reactions']
-      nbReac = nbReac + len(m['reactions'])
+      nbReacSum = nbReacSum + len(m['reactions'])
       nbMsgReac = nbMsgReac + 1
       for reac in reacs:
         ch = reac['reaction'][2:]
@@ -602,6 +629,7 @@ for i in range(1, nbMsg):
 
 # Average length msg (Fig10)
 avgLengthPerSender = []
+avgLengthOverall = decimizeStr(lenMsg/nbMsg, 1)
 for i in range(N2):
   if (sum(hrPerSender[i]) == 0):
     avgLengthPerSender.append(0)
@@ -617,6 +645,7 @@ lastMsgTS = j['messages'][0]['timestamp_ms']/1000. # FB logic: the last message 
 lastMsg = dt.datetime.fromtimestamp(lastMsgTS).isoformat()
 lastMsgPretty = dt.datetime.fromtimestamp(lastMsgTS).strftime("%Y-%m-%d at %H:%M")
 lastMsgShort = str(dt.datetime.fromtimestamp(lastMsgTS).date())
+ageConv = totalSecondsToStrShort(lastMsgTS-firstMsgTS)
 nameFirst = j['messages'][nbMsg-1]['sender_name']
 nameLast = j['messages'][0]['sender_name']
 
@@ -655,7 +684,7 @@ Q1, Q2, Q3 = findQuarters(msgPerDayX, msgPerDayY) # Dates when quarters have bee
 paretoRes = pareto(nbMsgPart)
 if (typ=="RegularGroup"): 
   # If there is more than two participants
-  printToFile("> Among the "+str(nbMsgReac)+" messages with reactions ("+decimizeStr(100*nbMsgReac/nbMsg,1)+"%), participants have reacted "+str(nbReac)+" times ("+decimizeStr(nbReac/nbMsgReac, 2)+" times per message).", textFile)
+  printToFile("> Among the "+str(nbMsgReac)+" messages with reactions ("+decimizeStr(100*nbMsgReac/nbMsg,1)+"%), participants have reacted "+str(nbReacSum)+" times ("+decimizeStr(nbReacSum/nbMsgReac, 2)+" times per message).", textFile)
   #printToFile("> Pareto: "+paretoRes[0]+"% of users posted more than "+paretoRes[1]+"% of messages ("+paretoRes[2]+"%).", textFile)
 else:
   # Private conv

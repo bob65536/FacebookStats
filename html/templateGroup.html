@@ -12,7 +12,8 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Stats of your Messenger conversations, made with MakeStats.">
 <link rel="stylesheet" type="text/css" href="../html/main.css">
-<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"> 
 <title>&#x1f4c8; {{customTitle}} | MakeStats</title>
 </head>
 
@@ -25,159 +26,272 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
 	<h3>Some facts</h3>
 	After this, you will know everything about [<i>{{name}}</i>] <br />
   <p><i>Data gathered from <b>{{firstMsgShort}}</b> to <b>{{lastMsgShort}}</b>.</i> <br />
-  Note: you can click on each image to have it on full size. <br />
-  <b>{{N}}</b> people are currently on this conversation. <b>{{Nout}}</b> left or were kicked. </p><br />
 
-  <h3>General information</h3>
-    <h4>How it started</h4>
-      <p>The 1st message has been written on {{firstMsg}} by <i>{{nameFirst}}</i>. <br />
-      Last message saved: written on {{lastMsg}} by <i>{{nameLast}}</i>.</p><br />
-    <h4>A question of time</h4>
-      Overall, <i>{{totalTimeConv}}</i> were spent on this conversation. <br />
-      <class="lowImportance">Longest silence: <i>{{silenceTime}}</i></class="lowImportance">.<br />
-      Half of all messages have been written on <b>{{Q2}}</b>. For more information, go to the <a href="#s3">Section 3</a>.
-    <h4>A sizeable conversation</h4>
-      <b>{{nbMsg}}</b> messages have been written, making an average of <b>{{avgNbMsg}}</b> messages per participant.<br />
+  First message written on {{firstMsg}} by <i>{{nameFirst}}</i>. <br />
+  Last message written on {{lastMsg}} by <i>{{nameLast}}</i>.</p>
+   
+  <h3>Summary</h3>
+  To jump to your favorite section, here is a summary. Touching a square will bring you to the section in question. Otherwise, feel free to scroll. 
+  <br />
+
+  <!-- Thank you web-tiki, you are a hero!
+  https://stackoverflow.com/questions/20456694/grid-of-responsive-squares --> 
+  <div class="square">
+    <a href="#s1"> <!-- Sssssh, HTML5 allowed me to do that -->
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{N}}</div>
+                  <div class="unit">participants</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#s2">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{nbMsg}}</div>
+                  <div class="unit">messages</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#s3">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{ageConv}}</div>
+                  <div class="unit">Age Of Conv</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#s4">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{nbReacSum}}</div>
+                  <div class="unit">reactions</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#s5">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{lenMsg}}</div>
+                  <div class="unit">characters</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#s6">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{nbConv}}</div>
+                  <div class="unit">Conv Started</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#s6">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{nbHeart}}</div>
+                  <div class="unit">&#x2764;</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#s7">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{nbDuCoup}}</div>
+                  <div class="unit">Du Coup</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+  <div class="square">
+    <a href="#start">
+      <div class="content">
+          <div class="table">
+              <div class="table-cell">
+                  <div class="nb">{{totalTimeConvShort}}</div>
+                  <div class="unit">Time Spent</div>
+              </div>
+          </div>
+      </div>
+    </a>
+  </div>
+    <br />
     <hr />
     <h3>Figures</h3>
       <h6>My favorite part ;) </h6>
-
-      <h4>Section 1: Participants</h4>
+      <i>Note: you can click on each image to have it on full size.</i>
       <div id="s1"></div>
+      <h4>Section 1: Participants</h4>
         <p>Who participated in this conversation? Look at this. <br />
         If you prefer a repartition depending of the number of characters, jump to <a href="#s5">section 5</a>.
         </p>
         <u>Pareto</u>: <b>{{pareto0}}%</b> of users posted more than {{pareto1}}% of messages (<b>{{pareto2}}%</b>).<br />
+        <b>{{Nout}}</b> left the conversation or were kicked. </p><br />
         <figure>
           <a href="./01-participants.png"><img src="./01-participants.png{{sizeImg}}" alt="Participants of the conversation" width={{widthImg}}> </a>
           <figcaption>Fig. 1: Participants of the conversation</figcaption>
         </figure>
       
       <hr />
-      <h4>Section 2: Hourly Repartition</h4>
       <div id="s2"></div>
+      <h4>Section 2: Hourly Repartition</h4>
         <p>You can find below the most active hours on this conversation. If you wish a more precise graph, feel free to check it <a href="./03a-preciseHourUse.png">here</a>. <br />
-        <i>Note: If the link is dead, it means you selected 24 bins on the script, so it is exactly the same thing as Fig 2.</i>
+        <i>Note: If the link is dead, it means you selected 24 bins on the script, so it is exactly the same thing as Fig 2.</i></p>
         <figure>
           <a href="./02a-hourUse.png"><img src="./02a-hourUse.png{{sizeImg}}" alt="Graph showing the number of messages hour by hour" width={{widthImg}}> </a>
           <figcaption>Fig. 2a: Participation hour-by-hour</figcaption>
-        </figure></p>
-        <p><i>Here is another way to represent this data. With the same conditions, more precise repartition is available <a href="./03b-preciseRadarGraph.png">here</a></i>.
+        </figure>
+        <p><i>Here is another way to represent this data. With the same conditions, more precise repartition is available <a href="./03b-preciseRadarGraph.png">here</a></i>.</p>
         <figure>
           <a href="./02b-hourlyRadarGraph.png"><img src="./02b-hourlyRadarGraph.png{{sizeImg}}" alt="Radar graph showing the number of messages hour by hour" width={{widthImg}}></a>
           <figcaption>Fig. 2b: Participation hour-by-hour (Radar graph)</figcaption>
-        </figure> </p>
-        <p><i>For the small conversations (max: 30 participants), you can have a radar graph for each participant.</i>
+        </figure>
+        <i>For the small conversations (max: 30 participants), you can have a radar graph for each participant.</i>
         <figure>
           <a href="./02c-hourlyRadarGraphPerUser.png"><img src="./02c-hourlyRadarGraphPerUser.png{{sizeImg}}" alt="Sorry, this graph is not available (too much users?)" width={{widthImg}}></a>
           <figcaption>Fig. 2c: Participation hour-by-hour per user</figcaption>
-        </figure> </p>
+        </figure> 
         If you wish to stress out inactive moments of the day, <a href="./04-emptyMoments.png">here you go</a>!
       
       <hr />
-      <h4>Section 3: Daily & Monthly repartitions</h4>
       <div id="s3"></div>
-        <p>This section allows you to see your activity with a longer term. <br />
+      <h4>Section 3: Daily & Monthly repartitions</h4>
+        <p>This section allows you to see your activity with a longer term. <br /></p>
         <figure>
           <a href="./05a-dateMsgPerDay.png"><img src="./05a-dateMsgPerDay.png{{sizeImg}}" alt="Daily repartition of the messages" width={{widthImg}}></a>
           <figcaption>Fig. 3a: Daily repartition of the messages</figcaption>
-        </figure> </p>
-        <p>You can see three diamonds on the bottom of these graphes. Each diamond represents a quarter. Between each diamond, a quarter of messages have been written. <br />
+        </figure>
+        <p>You can see three diamonds on the bottom of these graphes. Each diamond represents a quarter. Between each diamond, a quarter of messages have been written. <br /></p>
         Interpretation: 
         <ul>
           <li>Half of all messages have been written before/after <b>{{Q2}}</b>. </li>
           <li>Also, you wrote one quarter of all messages between the <abbr title={{firstMsgShort}}>beginning of the conversation</abbr> and <b>{{Q1}}</b></li>
           <li>The last quarter spans between <b>{{Q3}}</b> and <abbr title={{lastMsgShort}}>now</abbr>.</li>
-        </ul></p>
-        <p><i>If lines are too thin, let's take a step backwards and check the monthly repartition.</i>
+        </ul>
+        <i>If lines are too thin, let's take a step backwards and check the monthly repartition.</i>
         <figure>
           <a href="./05b-dateMsgPerMonth.png"><img src="./05b-dateMsgPerMonth.png{{sizeImg}}" alt="Monthly repartition of the messages" width={{widthImg}}> </a>
           <figcaption>Fig. 3b: Monthly repartition of the messages</figcaption>
-        </figure> </p>
+        </figure>
+
 
       <hr />
-      <h4>Section 4: Reactions</h4>
       <div id="s4"></div>
+      <h4>Section 4: Reactions</h4>
         <p>On almost all conversations, the receiver(s) may react to messages, in different ways. The next graphes will show you how!<br />
-        <b>Fun fact: 
-        Among the {{nbMsgReac}} messages with reactions ({{percentMsgReac}}%), participants have reacted {{nbReac}} times <class="lowImportance"><i>({{reacPerMsg}} times per message)</i></class="lowImportance">.</b> <br />
-        <p>How to read this graph? There are different colors, representing different reactions:
-        	<ul>
-        		<li style="color:#ff8888;">Pink: Love &#x1f60d;</li>
-            <li style="color:#808000;">Yellow: Haha &#x1f606;</li>
-            <li style="color:#0000ff;">Blue: Wow &#x1f62e;</li>
-            <li style="color:#00eeee;">Cyan: Sad &#x1f622;</li>
-            <li style="color:#ff0000;">Red: Angry &#x1f621;</li>
-            <li style="color:#00cc00;">Green: I agree! &#x1f44d;</li>
-            <li style="color:#cc0000;">Dark red: I disagree &#x1f44e;</li>
-        		<li style="color:#00cccc;">Turquoise: <abbr title="I used to have another possibility for the list of reacts... but that was before :/">Other reactions</abbr></li>
-        	</ul>
-        </p>
+        <b>Note: Among the {{nbMsgReac}} messages with reactions ({{percentMsgReac}}%), participants have reacted {{nbReac}} times <i>({{reacPerMsg}} times per message)</i>.</b> <br />
+        How to read this graph? There are different colors, representing different reactions:
+          <ul>
+            <li style="color:#ff8888;">Pink: Love &#x1f60d; (Sum = <b>{{reac0}}</b>)</li>
+            <li style="color:#808000;">Yellow: Haha &#x1f606; (Sum = <b>{{reac1}}</b>)</li>
+            <li style="color:#0000ff;">Blue: Wow &#x1f62e; (Sum = <b>{{reac2}}</b>)</li>
+            <li style="color:#00eeee;">Cyan: Sad &#x1f622; (Sum = <b>{{reac3}}</b>)</li>
+            <li style="color:#ff0000;">Red: Angry &#x1f621; (Sum = <b>{{reac4}}</b>)</li>
+            <li style="color:#00cc00;">Green: I agree! &#x1f44d; (Sum = <b>{{reac5}}</b>)</li>
+            <li style="color:#cc0000;">Dark red: I disagree &#x1f44e; (Sum = <b>{{reac6}}</b>)</li>
+            <li style="color:#00cccc;">Turquoise: <abbr title="I used to have another possibility for the list of reacts... but that was before :/">Other reactions</abbr> (Sum = <b>{{reac7}}</b>)</li>
+          </ul>
+
         <figure>
           <a href="./06a-reacSent.png"><img src="./06a-reacSent.png{{sizeImg}}" alt="Reactions sent (if empty: no one reacted)" width={{widthImg}}> </a>
           <figcaption>Fig. 4a: Reactions sent</figcaption>
-        </figure> </p>
-        <p>Once, Newton said <q>For every action, there is an equal and opposite reaction.</q> That is why, the following graph will show you the receivers of the reactions.
+        </figure>
+        <p>Once, Newton said <q>For every action, there is an equal and opposite reaction.</q> That is why, the following graph will show you the receivers of the reactions.</p>
         <figure>
           <a href="./06b-reacReceived.png"><img src="./06b-reacReceived.png{{sizeImg}}" alt="[[Reactions received (if empty: no one reacted)]]" width={{widthImg}}></a>
           <figcaption>Fig. 4b: Reactions received</figcaption>
-        </figure> </p>
+        </figure>
 
-      <hr />
-      <h4>Section 5: Length of messages</h4>
+            <hr />
       <div id="s5"></div>
-        <p>Size matters. <del>Your wife told you so.</del> In this section, we will see how many times you hit your poor keyboard for discussing on <i>{{name}}</i>.
+      <h4>Section 5: Length of messages</h4>
+        <p>Size matters. <del>Your wife told you so.</del> In this section, we will see how many times you hit your poor keyboard for discussing with your friend. <br />
+        Average length of message: <b>{{avgLengthOverall}}</b>.</p>
         <br />
         <figure>
           <a href="./07-lenMsg.png"><img src="./07-lenMsg.png{{sizeImg}}" alt="Participation by characters written" width={{widthImg}}> </a>
           <figcaption>Fig. 5a: Participation <i>by characters written</i></figcaption>
-        </figure> </p>
+        </figure>
         <p>Why such a big difference with <a href="#s1">the first figure</a>? Because each participant sends shorter or longer messages. <br />
-        Here is a proof.
+        Here is a proof.</p>
         <figure>
           <a href="./09-lengthOfMsg.png"><img src="./09-lengthOfMsg.png{{sizeImg}}" alt="Average length of messages" width={{widthImg}}> </a>
           <figcaption>Fig. 5b: Average length of messages</figcaption>
-        </figure> </p>
+        </figure>
 
       <hr />
-      <h4>Section 6: Starters and Lovers</h4>
       <div id="s6"></div>
-        <p>If you are with someone (wowowo, relax! It is just an example!) and you start questioning the reciprocity of your relationship, this section <strong>might</strong> help you (but keep a critical point of view, please). <br />
-        Well, since this is a group conversation, this section is not useful (but I let it here for the fun). See end note for interpreting these data. 
+      <h4>Section 6: Starters and Lovers</h4>
+        <p>If you are with someone (wowowo, relax! It is just an example!) and you start questioning the reciprocity of your relationship, this section <strong>might</strong> help you (but keep a critical point of view, please) -- see end note. 
+        Well, since this is a group conversation, this section is not useful (but I let it here for the fun). See end note for interpreting these data. </p>
+
         <br />
         <figure>
-          <a href="./08-behaviorStats.png"><img src="./08-behaviorStats.png{{sizeImg}}" alt="Starters and nuber of hearts" width={{widthImg}}> </a>
+          <a href="./08-behaviorStats.png"><img src="./08-behaviorStats.png{{sizeImg}}" alt="Starters and number of hearts" width={{widthImg}}> </a>
           <figcaption>Fig. 6: How often do you start conversations and who sends hearts?</figcaption>
-        </figure> </p>
+        </figure>
         <p><i>How long are your messages on average before ending? A big figure may underline a long and interesting conversation.</i><br />
         In this case, each one of the {{nbConv}} coversations lasted <b>{{lenMsgConv}}</b> messages (on average) before dying.</p>
 
-      <hr />
-      <h4>Section 7: Misc</h4>
+        <hr />
       <div id="s7"></div>
-        <p>Here, I listed some interesting graphes which do not fit in any section. <br />
+      <h4>Section 7: Misc</h4>
+        <p>Here, I listed some interesting graphes which do not fit in any section.</p>
+        <br />
         In there, you will find info about:
         <ul>
           <li>Length of silences (>1 day)</li>
           <li>How many 'Du coup' are said</li>
           <li>And other figures... one day.</li>
-        </ul></p>
+        </ul>
         <p><i>This graph shows the evolution of silence periods between conversations (above 1 day). If the line is rising, this might show a loss of interest over time...<br />
         On the other hand, if dates are outdated, either no messages are sent since a long time or conversation never stops running.</i>
+        Info: Longest silence: <b>{{silenceTime}}</b>.</p>
         <figure>
           <a href="./10-lengthOfSilences.png"><img src="./10-lengthOfSilences.png{{sizeImg}}" alt="Length of silences" width={{widthImg}}> </a>
           <figcaption>Fig. 7a: Length of silences?</figcaption>
-        </figure> </p>
+        </figure>
 
-        <p>Du coup<i> (or 'so...') is a French expression said too much times. So much that some might be bothered by this expression. </i>Du coup, <i>how often do participants said that?</i>
+      <div id="s7b"></div>
+        <p>Du coup<i> (or 'so...') is a French expression said too much times. So much that some might be bothered by this expression. </i>Du coup, <i>how often do participants said that?</i></p>
         <figure>
-          <a href="./11-duCoup.png"><img src="./11-duCoup.png{{sizeImg}}" alt="[[If you read this, no one said 'Du coup' in this conversation.]]" width={{widthImg}}> </a>
+          <a href="./11-duCoup.png"><img src="./11-duCoup.png{{sizeImg}}" alt="If you see this, no one said 'Du coup' in this conversation." width={{widthImg}}> </a>
           <figcaption>Fig. 7b: Du coup, how often do participants said 'Du coup'?</figcaption>
-        </figure> </p>
+        </figure> 
       <hr />
+    <div id="end"></div>
     <h3>Notes</h3>
     <p>If you read this, it means this report have been interesting. Thank you for having read everything :) <br />
-    Even if the data are a direct interpretation of your logs, do not take that for an absolute truth. <br />
+    Even if the data are a direct interpretation of your logs, do not take that for an absolute truth. </p><br />
     Here are points that might alter these information (and notes):
     <ul>
       <li>Only data from Messenger are processed. So, other interaction (SMS, phone calls, meetings, etc) are not included here.</li>
@@ -186,7 +300,8 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
       <li>If you do something bad with these results, I won't be held responsible. </li>
       <li>Thank you to <a href="https://thebestmotherfucking.website/">the Best Motherfucking Website</a> for giving tips on this HTML page!</li>
       <li>Other functionalities will be added. Don't forget to check regularly my <a href="https://github.com/bob65536">GitHub</a> for bugfixes.</li>
-    </ul></p>
-    <br /><br /><p class=date>Last update of this template: 2019-01-02 15:45 // Done with love <small>and with the [F5] key</small> by Bob Sleigh // Report generated on {{genTime}} seconds.</p>
+
+    </ul>
+    <br /><br /><p class=date>Last update of this template: 2019-01-08 0:05 // Done with &#x1f497; <small>and with the [F5] key</small> by Bob Sleigh // Report generated on {{genTime}} seconds.</p>
 </body>
 </html>
