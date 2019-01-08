@@ -8,6 +8,14 @@ Step 4: Wait until the archive is available (this can take between one and fifte
 
 After that, for this version, you need to put the Python program and the message log (file called "message.json") on the same directory.   
 This program is both compatible with Python 2.7 and Python 3.   
-To run the program: launch in a console python ./makeStats.py and wait for a while (the graphs are generated in less than two minutes).  
+To run the program: 
+
+Step 1: Retrieve the file message.json created by Facebook, when you request your data (unzip the archive).  
+Typically, you will find it on: *\[Download Folder]/facebook-\[yourUsernameId]/messages/inbox/\[yourFriend]*. Copy this file where the program is located (usually, it is on the same place as this readme).  
+Note: If you have several message.json files to merge, use jsonMerger.py as shown in my other project: https://github.com/bob65536/JsonMerger . Don't forget to place the files on the same directory as the program makeStats.  
+Step 2: Be sure to have on the same directory the **"html" folder**, **makeStats.py** and **messages.json**. Go to this folder.  
+Step 3: Run the script: `python makeStats.py` and wait. Usually, it takes between 5 and 120 seconds.  
+
+The results can be found on `./resAnalysis/stats.html`. If you wish to save the report, either export it on PDF or save the folders *html* and *resAnalysis*. Otherwise, pictures won't show.  
 
 More information will be provided later.
