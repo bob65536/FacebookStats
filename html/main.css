@@ -1,5 +1,5 @@
 html {
- background-color:#fefefe
+ background-color:#e0e0e0
 }
 body {
  font-family:Ubuntu,Open Sans;
@@ -212,16 +212,25 @@ figcaption {
 }
 .nb{
   font-weight: 900;
-  font-size:3em;
+  font-size:3.2em;
   text-align:center;
   color:#000000;
   font-family: 'Montserrat', "Open Sans", 'Ubuntu';
 }
 .unit{
-  font-weight: 700;
-  font-size:1.5em;
+  font-weight: 400;
+  font-size:1.92em;
   text-align:center;
   color:#111111;
   font-family: 'Montserrat', "Open Sans", 'Ubuntu';
   font-variant: small-caps
+}
+/* For guys on 2019 who use only phones and not PC anymore */
+@media (max-width:800px) {
+  .nb{
+    font-size:6.4vw;
+  }
+  .unit{
+    font-size:3.6vw;
+  }
 }

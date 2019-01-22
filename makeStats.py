@@ -40,6 +40,7 @@ encoding = 'latin1'                     # If there are accents (for French peopl
 decoding = 'utf-8'                      # To interpret accent words from json, use this: u'\xc3\x89'.encode('latin1').decode('utf-8')
 pathRes = "resAnalysis"                 # In the end, we will have ~25 files: get them in a folder
 customTitle=u"Stats of xxx"     # The title you want (add xxx for inserting name of the conversation)
+endConvDelay = 86400                    # Delay before considering a conversation closed (in sec). 86400 s = 1 day
 # Below this line: do NOT edit unless you know what you do!
 ####################
 startTimeStamp = (startDate - dt.datetime(1970,1,1)).total_seconds()-timeZoneStartTime*3600
@@ -85,14 +86,17 @@ def prettyAllTxt():
   global name
   global nameFirst
   global nameLast
-  global reacActor
-  global reacSender
   global listPeople
+  try:
+    global reacActor
+    global reacSender
+    reacActor = prettyTxt(reacActor)
+    reacSender = prettyTxt(reacSender)
+  except NameError:
+    print("No reactions here.")
   name = prettyTxt(name)
   nameFirst = prettyTxt(nameFirst)
   nameLast = prettyTxt(nameLast)
-  reacActor = prettyTxt(reacActor)
-  reacSender = prettyTxt(reacSender)
   listPeople = list(listPeople)
   for i in range(len(listPeople)):
     listPeople[i] = prettyTxt(listPeople[i])
@@ -100,7 +104,7 @@ def prettyAllTxt():
 def makeSubplot(N):
   # How to do subplots like a boss (nb, position, etc) ?
   # Check it here!
-  if (N<30):
+  if (N<=30):
     if N==1:
       return (1,1)
     if N==2:
@@ -223,6 +227,16 @@ def nbDailyMsg(hourMsgD):
     yAxis[i] = hourMsgD.count(xAxis[i])
   return xAxis, yAxis
 
+def nbWeekDayMsg(day, nb):
+  # day represents a array with consecutive dates (from the creation to today), repeated only once
+  # nb represents the number of msg per day (from 0 to a lot)
+  # res represents the nb of msg on Monday, Tuesay, etc. 
+  res = [0, 0, 0, 0, 0, 0, 0]
+  for i in range(len(day)):
+    wd = day[i].weekday() # weekday gives a value between 0 (Monday) and 6 (Sunday)
+    res[wd] += nb[i]
+  return res
+
 def nbMonthlyMsg(hourMsgD):
   # Get distribution msg per month
   firstMsg = dt.date(hourMsgD[-1].year, hourMsgD[-1].month, 1) # Put to the 1st day
@@ -307,7 +321,6 @@ def totalSecondsToStrShort(seconds):
   res = res + str(mn).zfill(2) + ":" + str(sec).zfill(2) 
   return res
 
-
 def makeAutopct(values):
   # Thanks to https://stackoverflow.com/questions/6170246/how-do-i-use-matplotlib-autopct
   def my_autopct(pct):
@@ -320,6 +333,21 @@ def makeAutopct(values):
     else:
       return ""
   return my_autopct
+
+def avgTTR(TTR):
+  # TTR is a list of lists with times in seconds (for each participant).
+  # res is a list af average TTR for each guy (in seconds)
+  # Note: for zero values, a value of 0s will be given. Hope this won't be displayed...
+  res = []
+  for oneTTR in TTR:
+    s=0  # Total of time (<24h or endConvDelay) 
+    nb=0 # Nb of message processed
+    for val in oneTTR:
+      if val<endConvDelay:
+        s+=val
+        nb+=1
+    res.append(s*1.0/nb)  
+  return res # Form of: replies within 5s, 30s, ...
 
 def addToCsv(txt):
   if sys.version_info[0] == 2: # If you have Python 2
@@ -339,8 +367,7 @@ def sendToCsv():
   # To make global analysis: we will save interesting values to a CSV. 
   # If it already exists, apppend data in the next line.
   
-  header = ("Type;Name;Start_Date;Start_Who;End_Date;End_Who;NbPart_curr;NbPart_total;" + 
-            "")
+  # header = ("Type;Name;Start_Date;Start_Who;End_Date;End_Who;NbPart_curr;NbPart_total;" + "")
   res += addToCsv(str(typ))         # Type (Regular or RegularGroup)  
   res += addToCsv(name)             # Name of the conv
   res += addToCsv(firstMsg)         # Date of the 1st msg
@@ -368,9 +395,10 @@ def removeFile(fileName):
 def resizePicsForHtml():
   listFiles=["01-participants.png","02a-hourUse.png","02b-hourlyRadarGraph.png","02c-hourlyRadarGraphPerUser.png",
              "03a-preciseHourUse.png","03b-preciseRadarGraph.png","04-emptyMoments.png",
-             "05a-dateMsgPerDay.png","05b-dateMsgPerMonth.png","06a-reacSent.png",
+             "05a-dateMsgPerDay.png","05b-dateMsgPerMonth.png","05c-dateMsgPerWeekDay.png","06a-reacSent.png",
              "06b-reacReceived.png","07-lenMsg.png","08-behaviorStats.png",
-             "09-lengthOfMsg.png","10-lengthOfSilences.png","11-duCoup.png"]
+             "09-lengthOfMsg.png","10-lengthOfSilences.png","11-duCoup.png",
+             "12-TTR.png"]
   try:
     # If we can create miniatures for a better webpage
     from PIL import Image
@@ -424,8 +452,9 @@ def saveReportToHtml():
                                firstMsgShort=firstMsgShort, lastMsgShort=lastMsgShort, lenMsg=lenMsg,
                                silenceTime=totalSecondsToStr(silenceTime.total_seconds()),
                                nbMsg=nbMsg, avgNbMsg=decimizeStr(1.0*nbMsg/(1.0*N), 2),
-                               Q2=Q2, Q1=Q1, Q3=Q3, nbConv=sum(convStartedBySender),
-                               nbMsgReac=nbMsgReac, percentMsgReac=decimizeStr(100*nbMsgReac/nbMsg,1), nbReacSum=nbReacSum, reacPerMsg=decimizeStr(nbReacSum/nbMsgReac, 2),
+                               Q2=Q2, Q1=Q1, Q3=Q3, mostActiveDay=mostActiveDay, mostMsgDay=mostMsgDay, 
+                               nbConv=sum(convStartedBySender), endConvDelay=totalSecondsToStrShort(endConvDelay),
+                               nbMsgReac=nbMsgReac, percentMsgReac=decimizeStr(100*nbMsgReac/nbMsg,1), nbReacSum=nbReacSum, reacPerMsg=decimizeStr(nbReacSum/nbMsgReac, 2) if nbMsgReac!=0 else "NaN",
                                reac0=reacNb[0], reac1=reacNb[1], reac2=reacNb[2], reac3=reacNb[3], reac4=reacNb[4], reac5=reacNb[5], reac6=reacNb[6], reac7=str(sum(reacNb)-sum(reacNb[:7])),
                                pareto0=paretoRes[0], pareto1=paretoRes[1], pareto2=paretoRes[2], lenMsgConv=decimizeStr(nbMsg/sum(convStartedBySender), 1), 
                                totalTimeConv=totalSecondsToStr(convoTimeSpent.total_seconds()), totalTimeConvShort=totalSecondsToStrShort(convoTimeSpent.total_seconds()), 
@@ -451,6 +480,7 @@ nbHeart = [0]*N
 nbJe = [0]*N
 nbTu = [0]*N
 nbDuCoup = [0]*N
+timeToReply = [[] for x in range(N)] # How long does X reply to the previous msg? // akaa TTR (too long to write)
 hourMsg = []
 hourMsgD = []
 hourMsgMo = []
@@ -469,9 +499,9 @@ reacHex  =["98 8d","98 86","98 ae","98 a2","98 a0","91 8d","91 8e","00 00"]
 reacNb = [0]*8
 heartHex = "e2 9d a4" # This variable represents a heart
 
-# Stats of participation / Analyze per message
+# Stats of participation / Analysis per message
 for m in j['messages']:
-  # Date filter
+  # Date filter. Nothing goes here.
   if (m['timestamp_ms']/1000. >= startTimeStamp):
     # Count number of messages
     nbMsg += 1
@@ -497,6 +527,7 @@ for m in j['messages']:
       nbDuCoup.append(0)
       nbJe.append(0)
       nbTu.append(0)
+      timeToReply.append([])
       idUser = listPeople.index(m['sender_name']) # Now, the user is added :) 
     except KeyError:
       # The user does not exist anymore (removed account, ...)
@@ -519,14 +550,27 @@ for m in j['messages']:
         nbDuCoup.append(0)
         nbJe.append(0)
         nbTu.append(0)
+        timeToReply.append([])
         idUser = listPeople.index("UNKNOWN") # Now, the user is added :) 
-    
     # Classic procedure for each message (retrieving date of the msg, the hour, etc)
     hourMsg.append(dt.datetime.fromtimestamp(m['timestamp_ms']/1000))
     d=dt.datetime.fromtimestamp(m['timestamp_ms']/1000).date() # date in the form of datetime.date(2018,12,25)
     hourMsgD.append(d)
     hourMsgMo.append(dt.date(d.year, d.month, 1))  # We create a distribution depending on the month (day of the month=1)
     
+    # Getting TTR
+    try:
+      currentUser = m['sender_name']
+      currentTS = m['timestamp_ms']/1000.
+    except KeyError:
+      True # No sender name attribute. Just ignore the message.
+    try:
+      if currentUser != previousUser:
+        # Someone else talked
+        timeToReply[previousId] += [abs(currentTS-previousTS)]
+    except NameError:
+      # First message. previousUser not defined yet
+      print("First msg analyzed!")
     # Count nb of certain words.
     occ = 0
     for keyword in ["je", "moi", "j'", "m'", "me"]:
@@ -546,11 +590,25 @@ for m in j['messages']:
       nbDuCoup[idUser] += ("du coup" in m['content'].lower())
     except KeyError:
         True
+        
     try: 
       msgHex = (" ".join("{:02x}".format(ord(c)) for c in m['content']))
       nbHeart[idUser] += (heartHex in msgHex)
     except KeyError:
         True
+        
+    occ = 0
+    for keyword in ["e2 9d a4","f0 9f 92 9b","f0 9f 92 9a","f0 9f 92 99","f0 9f 92 9c",
+                    "f0 9f 92 95","f0 9f 92 93","f0 9f 92 9e","f0 9f 92 97","f0 9f 92 98",
+                    "f0 9f 92 96","f0 9f 92 9d","f0 9f 92 9f",
+                    "f0 9f 98 8d","f0 9f 98 98","f0 9f 98 97","f0 9f 98 99","f0 9f 98 9a",
+                    "f0 9f 98 bb","f0 9f 98 bd","f0 9f 91 84"]:
+      try: 
+        msgHex = (" ".join("{:02x}".format(ord(c)) for c in m['content']))
+        occ += (keyword in msgHex)
+      except KeyError:
+        True
+    nbHeart[idUser] += occ # Don't abuse of hearts. Else, this count will explode...
     
     # Reactions!  
     try:
@@ -578,6 +636,7 @@ for m in j['messages']:
           nbDuCoup.append(0)
           nbJe.append(0)
           nbTu.append(0)
+          timeToReply.append([])
           reacActorIndex = listPeople.index(reacActor) # Now, the user is added and this should be okay
         reacSender = m['sender_name'] # Get the sender of the message provoking reac(s)
         reacSenderIndex = listPeople.index(reacSender)
@@ -586,13 +645,20 @@ for m in j['messages']:
           reacSentPerActor[reacActorIndex][reacHex.index(reacMsgHex)] += 1
           reacReceivedPerSender[reacSenderIndex][reacHex.index(reacMsgHex)] += 1
         except ValueError:
-          # Remember when ya put custom reactions? Now, think about them!
-          print("Note: someone reacted with a weird emoji.")
           reacNb[7] += 1
           reacSentPerActor[reacActorIndex][7] += 1
           reacReceivedPerSender[reacSenderIndex][7] += 1  
     except KeyError:
       False # No reactions
+    # NOTE: previousUser and previousDate refer to the previous iteration of the loop
+    # Indeed, these data are more recent than the next message (reading from the most recent to the oldest msg)
+    # Facebook sucks sometimes...
+    try:
+      previousUser = m['sender_name'] # To get the user from the msg before (for assessing TTR)
+    except KeyError:
+      True # Ignore this. No sender name.
+    previousTS = m['timestamp_ms']/1000.
+    previousId = idUser
   # else:
     # Not counted. Out of date bounds.
 
@@ -602,21 +668,18 @@ reacSent = [sum(reacSentPerActor[i]) for i in range(N2)]
 if(len(hourMsgD) == 0):
   print("[FATAL] Date bounds too tight or empty conversation! Change the value of startDate or reset it by choosing year 2000")
   print("The next line will yield a IndexError exception: this is a logic consequence.")
-# Silence time
-for i in range(1, nbMsg):
-  a,b = hourMsg[i-1], hourMsg[i]
-  if (a-b > silenceTime):
-    silenceTime = a-b
-# Now, we have the good value for silenceTime.
+
 
 # Who starts first and Fig8
 for i in range(1, nbMsg):
   a,b = hourMsg[i-1], hourMsg[i] # a is more recent than b ([0]: most recent)
-  if (a-b > dt.timedelta(1,60)): # There is more than 24h between two msgs
+  if (a-b > silenceTime): # Silence time
+    silenceTime = a-b
+  if (a-b > dt.timedelta(0,endConvDelay)): # There is more than 24h between two msgs (or other value defined on the start of the prog)
     idUser = listPeople.index(j['messages'][i-1]['sender_name']) # id of the guy who started the conv.
     convStartedBySender[idUser] += 1
-    silenceArray[0].append(a)
-    silenceArray[1].append(a-b)
+    silenceArray[0].append(a)       # When
+    silenceArray[1].append(a-b)     # How long
     #if ('?' in j['messages'][i]['content']):
       # Now, we had an unanswered question = Ignored :(
       #idUser2 = listPeople.index(j['messages'][i]['sender_name']) # id of the guy poor ignored
@@ -650,9 +713,11 @@ nameFirst = j['messages'][nbMsg-1]['sender_name']
 nameLast = j['messages'][0]['sender_name']
 
 # Sort everything
-nbMsgPart, listPeople, reacSentPerActor, reacSent, reacReceived, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(nbMsgPart, listPeople, reacSentPerActor, reacSent, reacReceived, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, nbHeart), reverse=False))
+nbMsgPart, listPeople, reacSentPerActor, reacSent, reacReceived, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(nbMsgPart, listPeople, reacSentPerActor, reacSent, reacReceived, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False))
 msgPerDayX, msgPerDayY = nbDailyMsg(hourMsgD)
 msgPerMonthX, msgPerMonthY = nbDailyMsg(hourMsgMo)
+msgPerWeekDayX = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+msgPerWeekDayY = nbWeekDayMsg(msgPerDayX, msgPerDayY) # Will be filled from msgPerDayX,Y
 times.append(time.time())
 
 # Correcting the encoding before displaying everything
@@ -674,13 +739,9 @@ if (typ=="RegularGroup"):
 else:
   printToFile("Your interaction with "+name+":", textFile)
 # Generic information
-#printToFile("> The 1st message has been written on "+firstMsg+" by "+nameFirst+".", textFile)
-#printToFile("> Last message saved: written on "+lastMsg+" by "+nameLast+".", textFile)
-#printToFile("> Longest silence: "+totalSecondsToStr(silenceTime.total_seconds()), textFile)
-#printToFile("> "+str(nbMsg)+" messages have been written, making an average of "+decimizeStr(1.0*nbMsg/(1.0*N), 2)+" messages per participant.", textFile)
 Q1, Q2, Q3 = findQuarters(msgPerDayX, msgPerDayY) # Dates when quarters have been reached
-#printToFile("> Half of all messages have been written before/after "+str(Q2), textFile)
-#printToFile("> Messages are in average "+decimizeStr(lenMsg/nbMsg, 1)+" characters long.", textFile)
+mostMsgDay = max(msgPerDayY)
+mostActiveDay = msgPerDayX[msgPerDayY.index(mostMsgDay)]
 paretoRes = pareto(nbMsgPart)
 if (typ=="RegularGroup"): 
   # If there is more than two participants
@@ -706,9 +767,6 @@ textFile.close()
 times.append(time.time())
 print("Process done in "+str(times[-1]-times[-2])+"+ sec")
 
-def sortList(byThisList, reverse):
-  byThisList, reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(byThisList, reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=reverse)) # Get a clean ranking
-
 ### Graphes     ###############################################################
 #plt.figure(1)  ###############################################################
 
@@ -722,7 +780,7 @@ plt.savefig(pathRes+"/01-participants.png", dpi=100, bbox_inches='tight')
 plt.close()
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
-#plt.figure(2) ###############################################################
+#plt.figure(2) ################################################################
 # Rule of thumb: for high values (>360), prepare a good computer (720: 2GB of RAM + 60'' CPU time, 1440: 5GB + 90'' for the program alone)
 hr=hourPost(hourMsg, nbBins)
 print("Plotting Fig. 2: messages per hour.")
@@ -730,8 +788,11 @@ matplotlib.rcParams['font.size'] = 12
 plt.figure(figsize=(12, 9))
 plt.bar(np.arange(24), hr[0], width=1, alpha=.8, align='edge')
 for (a,b) in zip(np.arange(24), hr[0]):
-  if(b>0):
-    plt.text(a+.02, b+.5 if b>10 else 1.05*b, str(b), fontsize=15, weight='bold')
+  if(max(hr[0])>999):
+    plt.text(a+.02, b, str(b), fontsize=15, weight='bold', rotation=90, verticalalignment='top' if b*1.0/max(hr[0])>0.8 else 'bottom')
+  else:
+    if(b>0):
+      plt.text(a+.02, b+.5 if b>10 else 1.05*b, str(b), fontsize=15, weight='bold')
 plt.xticks(np.arange(0,24,1))    
 plt.grid(axis='x')
 plt.title("Hourly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+")")
@@ -758,8 +819,8 @@ plt.savefig(pathRes+"/02b-hourlyRadarGraph.png", dpi=100, bbox_inches='tight')
 plt.close()
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
-#plt.figure(2c) ##########################################################
-if (N < 30):
+#plt.figure(2c) ###############################################################
+if (N <= 30):
   print("Plotting Fig. 2ter: radar graph for active hours PER user.")
   subX, subY = makeSubplot(N)
   fig = plt.figure(figsize=(8*subY, 8*subX))
@@ -784,7 +845,7 @@ if (N < 30):
   plt.savefig(pathRes+"/02c-hourlyRadarGraphPerUser.png", dpi=100, bbox_inches='tight')
   plt.close()
 else:
-  removeFile(pathRes+"/02c-hourlyRadarGraphPerUser.png")
+  removeFile(pathRes+"/02c-hourlyRadarGraphPerUser.png*")
   print("Skipping Fig. 2ter: too many users...")
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
@@ -828,8 +889,8 @@ if(nbBins != 24):
   print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 else:
   print("Fig 3 == Fig 2: ignoring.")
-  removeFile(pathRes+"/03a-preciseHourUse.png")
-  removeFile(pathRes+"/03b-preciseRadarGraph.png")
+  removeFile(pathRes+"/03a-preciseHourUse.png*")
+  removeFile(pathRes+"/03b-preciseRadarGraph.png*")
 #plt.figure(3ter) #############################################################
 print("Plotting Fig. 4: stressing inactive moments.")
 # Taken from SO #
@@ -849,7 +910,7 @@ plt.savefig(pathRes+"/04-emptyMoments.png", dpi=100, bbox_inches='tight')
 plt.close()
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
-#plt.figure(4)  ###############################################################
+#plt.figure(5a)  ###############################################################
 print("Plotting Fig. 5: daily repartition of msg.")
 plt.figure(figsize=(24,9))
 plt.grid(True)
@@ -869,13 +930,13 @@ plt.savefig(pathRes+"/05a-dateMsgPerDay.png", dpi=100)
 plt.close()
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
-#plt.figure(5)  ###############################################################
+#plt.figure(5b)  ###############################################################
 print("Plotting Fig. 5b: monthly repartition of msg.")
 plt.figure(figsize=(12,12))
 plt.grid(True)
 for (a,b) in zip(msgPerMonthX, msgPerMonthY):
   if(b>0): # For better visibility, we hide values below 1
-    plt.text(a+dt.timedelta(days=7), b+.5 if b>10 else 1.05*b, str(b), fontsize=16, weight='bold')
+    plt.text(a+dt.timedelta(days=7), b+.5 if b>10 else 1.05*b, str(b), fontsize=16, weight='bold', horizontalalignment='left')
 #plt.xticks(np.arange(msgPerDayX[0], msgPerDayX[-1],5))
 # Plotting quarter labels (+text)
 plt.plot([Q1, Q2, Q3], [0,0,0], 'rD')
@@ -888,6 +949,20 @@ plt.savefig(pathRes+"/05b-dateMsgPerMonth.png", dpi=100, bbox_inches='tight')
 plt.close()
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+#plt.figure(5c)  ###############################################################
+print("Plotting Fig. 5c: days of the week")
+plt.figure(figsize=(12,12))
+plt.grid(True)
+for (a,b) in zip(msgPerWeekDayX, msgPerWeekDayY):
+  if(b>0): # For better visibility, we hide values below 1
+    plt.text(a, b+.5 if b>10 else 1.05*b, str(b), fontsize=16, weight='bold', horizontalalignment='center')
+#plt.xticks(np.arange(msgPerDayX[0], msgPerDayX[-1],5))
+plt.bar(msgPerWeekDayX, msgPerWeekDayY, align='center', width=.7, alpha=1)
+plt.title("Weekly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+")")
+plt.savefig(pathRes+"/05c-dateMsgPerWeekDay.png", dpi=100, bbox_inches='tight')
+plt.close()
+times.append(time.time())
+print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 #plt.figure(6) ###############################################################
 if nbMsgReac > 0:
   print("Plotting Fig. 6: reactions sent.")
@@ -897,7 +972,7 @@ if nbMsgReac > 0:
   plt.grid(axis='x')
   colors=['#ff8888','#eeee00','#0000ff','#00eeee','#ff0000','#00cc00','#cc0000','#00cccc']
   # Matplotlib bug: it sorts y axis by alphabetical order automatically, without sorting the other data :(
-  reacSent, reacReceived, listPeople, nbMsgPart, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(reacSent, reacReceived, listPeople, nbMsgPart, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, nbHeart), reverse=False)) # Get a clean ranking
+  reacSent, reacReceived, listPeople, nbMsgPart, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(reacSent, reacReceived, listPeople, nbMsgPart, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False)) # Get a clean ranking
   width = .7
   #plt.xticks(np.arange(msgPerDayX[0], msgPerDayX[-1],5))
   y = []
@@ -922,7 +997,7 @@ if nbMsgReac > 0:
     endList=N2-reacReceived.count(0) # We strip away zero values by setting the starting point of our graph
     plt.figure(figsize=(min(200,6+max(reacReceived)//10),min(600, 8+endList/2)))
     plt.grid(axis='x')
-    reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=False)) # Get a clean ranking
+    reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(reacReceived, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False)) # Get a clean ranking
     y = []
     p = []
     offset = [0]*endList
@@ -939,15 +1014,14 @@ if nbMsgReac > 0:
     plt.close()
   else:
     print("Skipping Fig. 6b: duplicate with Fig6.")
-    removeFile(pathRes+"/06b-reacReceived.png")
+    removeFile(pathRes+"/06b-reacReceived.png*")
 else:
   print("Skipping Fig 6 and 6b: no reactions.")
-  removeFile(pathRes+"/06a-reacSent.png")
-  removeFile(pathRes+"/06b-reacReceived.png")
+  removeFile(pathRes+"/06*")
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 #plt.figure(7)  ###############################################################
-lenMsgPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(lenMsgPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, nbHeart), reverse=False)) # Get a clean ranking
+lenMsgPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(lenMsgPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False)) # Get a clean ranking
 print("Plotting Fig. 7: length of msg by participants.")
 matplotlib.rcParams['font.size'] = 16
 plt.figure(figsize=(12+N/3., 9+N/4.))
@@ -966,7 +1040,7 @@ print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 matplotlib.rcParams['font.size'] = 12
 if (N != 0): # In fact, we can do that for any conversation!
   print("Plotting Fig. 8: conversation starters.")
-  convStartedBySender, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(convStartedBySender, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=False)) # Get a clean ranking
+  convStartedBySender, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(convStartedBySender, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False)) # Get a clean ranking
   fig = plt.figure(figsize=(18,9))
   ax = fig.add_subplot(1,2,1)
   ax.pie(convStartedBySender, labels=listPeople, rotatelabels =True, autopct=makeAutopct(convStartedBySender), startangle=90)
@@ -983,12 +1057,12 @@ if (N != 0): # In fact, we can do that for any conversation!
   plt.close()
 else:
   print("Skipping Fig. 8: Suitable only if there is a F2F conversation.")
-  removeFile(pathRes+"/08-behaviorStats.png")
+  removeFile(pathRes+"/08-behaviorStats.png*")
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 #plt.figure(9)  ##############################################################
 print("Plotting Fig. 9: average length of msg.")
-avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=False)) # Get a clean ranking
+avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False)) # Get a clean ranking
 startList=avgLengthPerSender.count(0) # We strip away zero values by setting the starting point of our graph
 plt.figure(figsize=(15, min(200, 8+(startList)/1.2)))
 plt.grid(axis='x')
@@ -1014,7 +1088,7 @@ print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 #plt.figure(11)  ##############################################################
 if(sum(nbDuCoup) > 0):
   print("Plotting Fig. 11: Du coup...")
-  nbDuCoup, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart = zip(*sorted(zip(nbDuCoup, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, nbHeart), reverse=True)) # Get a clean ranking
+  nbDuCoup, timeToReply, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbHeart = zip(*sorted(zip(nbDuCoup, timeToReply, avgLengthPerSender, nbMsgPart, listPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbHeart), reverse=True)) # Get a clean ranking
   endList=N2-nbDuCoup.count(0) # We strip away zero values by setting the starting point of our graph
   plt.figure(figsize=(15, min(200, 8+endList/2)))
   plt.grid(axis='x')
@@ -1027,11 +1101,41 @@ if(sum(nbDuCoup) > 0):
   plt.close()
 else:
   print("Skipping Fig. 11: No 'Du coup' said")
-  removeFile(pathRes+"/11-duCoup.png")  
+  removeFile(pathRes+"/11-duCoup.png*")  
 times.append(time.time())
 print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
 #plt.figure(12)  ##############################################################
-#print("Plotting Fig. 12: About the last conversations")
+#print("Plotting Fig. 12: Time to reply")
+if (N2 <= 8):
+  print("Plotting Fig. 12: time to reply per user")
+  averageTTR = avgTTR(timeToReply) # Warning, this list is not attached to the other ones. Please add it when you zip lists!
+  intervals = [0, 5, 30, 120, 300, 900, 3600, 
+               3*3600, 6*3600, 12*3600, 86400,
+               2*86400, 4*86400, 7*86400, 1e+10] 
+  labelInt=["< 5s","5-30s","30s-2m","2-5m","5-15m",
+            "15m-1h", "1-3h", "3-6h", "6-12h", "12-24h",
+            "1-2d", "2-4d", "4-7d", "> 7d"]
+  colorInt=['blue']*4 + ['green']*6 + ['red']*4
+  fig = plt.figure(figsize=(12, 8*N2))
+  for i in range(N2):
+    ax = fig.add_subplot(N2,1,i+1)
+    hist,binInt=np.histogram(timeToReply[i],intervals) # Substitute of distribTTR()
+    ax.bar(range(len(hist)),hist,width=1,color=colorInt)
+    ax.set_xticks(range(len(labelInt)))
+    ax.set_xticklabels(labelInt[j] for j in range(len(labelInt)))
+    if(len(timeToReply[i]) == 0):
+      plt.title("TTR repartition for "+listPeople[i])
+    else:
+      plt.title("TTR repartition for "+listPeople[i]+"\nAverage: "+totalSecondsToStrShort(averageTTR[i]))
+  plt.savefig(pathRes+"/12-TTR.png", dpi=100, bbox_inches='tight')
+  plt.close()
+else:
+  removeFile(pathRes+"/12-TTR.png*")
+  print("Skipping Fig. 12: too many users...")
+times.append(time.time())
+print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+#plt.figure(13)  ##############################################################
+#print("Plotting Fig. 13: About the last conversations")
 
 ###############################################################################
 ###############################################################################

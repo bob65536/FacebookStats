@@ -5,7 +5,7 @@ statistics. Done on my spare time, between two refreshes of Facebook, five pages
 a few GIF on The Coding Life and two unanswered messages to friends on Messenger.--> 
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html" charset="{{encoding}}">
 <meta name="theme-color" content="#ffffff">
@@ -33,7 +33,7 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
   <h3>Summary</h3>
   To jump to your favorite section, here is a summary. Touching a square will bring you to the section in question. Otherwise, feel free to scroll. 
   <br />
-
+  <div id="squares"></div>
   <!-- Thank you web-tiki, you are a hero!
     https://stackoverflow.com/questions/20456694/grid-of-responsive-squares --> 
   <div class="square">
@@ -102,7 +102,7 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
           <div class="table">
               <div class="table-cell">
                   <div class="nb">{{nbConv}}</div>
-                  <div class="unit">Conv Started</div>
+                  <div class="unit">Conv Started<sup> [1]</sup></div>
               </div>
           </div>
       </div>
@@ -114,7 +114,7 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
           <div class="table">
               <div class="table-cell">
                   <div class="nb">{{nbHeart}}</div>
-                  <div class="unit">&#x2764;</div>
+                  <div class="unit">&#x2764;<sup> [2]</sup></div>
               </div>
           </div>
       </div>
@@ -138,13 +138,15 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
           <div class="table">
               <div class="table-cell">
                   <div class="nb">{{totalTimeConvShort}}</div>
-                  <div class="unit">Time Spent</div>
+                  <div class="unit">Time Spent<sup> [3]</sup></div>
               </div>
           </div>
       </div>
     </a>
   </div>
     <br />
+      <p>[1],[2]: See <a href="#footnotes">end of the page.</a>  <br />
+      [3] Time spent is the time people stayed on this conversation. Methods of calculation: see <a href="footnotes">footnotes</a>.</p>
     <hr />
     <h3>Figures</h3>
       <h6>My favorite part ;) </h6>
@@ -175,7 +177,7 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
         </figure>
         <p><i>Here is a radar graph for your friend and you.</i></p>
         <figure>
-          <a href="./02c-hourlyRadarGraphPerUser.png"><img src="./02c-hourlyRadarGraphPerUser.png{{sizeImg}}" alt="Sorry, this graph is not available" width={{widthImg}}></a>
+          <a href="./02c-hourlyRadarGraphPerUser.png"><img src="./02c-hourlyRadarGraphPerUser.png{{sizeImg}}" alt="Sorry, this graph is not available" width={{widthImg}} ></a>
           <figcaption>Fig. 2c: Participation hour-by-hour per user</figcaption>
         </figure>
         If you wish to stress out inactive moments of the day, <a href="./04-emptyMoments.png">here you go</a>!
@@ -185,9 +187,10 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
       <h4>Section 3: Daily & Monthly repartitions</h4>
         <p>This section allows you to see your activity with a longer term. <br /></p>
         <figure>
-          <a href="./05a-dateMsgPerDay.png"><img src="./05a-dateMsgPerDay.png{{sizeImg}}" alt="Daily repartition of the messages" width={{widthImg}}></a>
+          <a href="./05a-dateMsgPerDay.png"><img src="./05a-dateMsgPerDay.png{{sizeImg}}" alt="Daily repartition of the messages" width={{widthImg}} title="Yes, this is two radar graphes, put side to side. And no, this is not what you think."></a>
           <figcaption>Fig. 3a: Daily repartition of the messages</figcaption>
         </figure>
+        <p>The most active day was on <b>{{mostActiveDay}}</b>, when <b>{{mostMsgDay}}</b> messages were sent. </p>
         <p>You can see three diamonds on the bottom of these graphes. Each diamond represents a quarter. Between each diamond, a quarter of messages have been written. <br /></p>
         Interpretation: 
         <ul>
@@ -199,6 +202,11 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
         <figure>
           <a href="./05b-dateMsgPerMonth.png"><img src="./05b-dateMsgPerMonth.png{{sizeImg}}" alt="Monthly repartition of the messages" width={{widthImg}}> </a>
           <figcaption>Fig. 3b: Monthly repartition of the messages</figcaption>
+        </figure>
+        <i>Are you more often here during weekdays or weekends? Check this out!</i>
+        <figure>
+          <a href="./05c-dateMsgPerWeekDay.png"><img src="./05c-dateMsgPerWeekDay.png{{sizeImg}}" alt="Week Day repartition of the messages" width={{widthImg}}> </a>
+          <figcaption>Fig. 3c: Week repartition of the messages</figcaption>
         </figure>
 
       <hr />
@@ -260,14 +268,15 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
         <ul>
           <li>Length of silences (>1 day)</li>
           <li>How many 'Du coup' are said</li>
+          <li>Time to reply for each participant</li>
           <li>And other figures... one day.</li>
         </ul>
-        <p><i>This graph shows the evolution of silence periods between conversations (above 1 day). If the line is rising, this might show a loss of interest over time...<br />
+        <p><i>This graph shows the evolution of silence periods between conversations (above {{endConvDelay}}). If the line is rising, this might show a loss of interest over time...<br />
         On the other hand, if dates are outdated, either no messages are sent since a long time or conversation never stops running.</i>
         Info: Longest silence: <b>{{silenceTime}}</b>.</p>
         <figure>
           <a href="./10-lengthOfSilences.png"><img src="./10-lengthOfSilences.png{{sizeImg}}" alt="Length of silences" width={{widthImg}}> </a>
-          <figcaption>Fig. 7a: Length of silences?</figcaption>
+          <figcaption>Fig. 7a: Length of silences</figcaption>
         </figure>
 
       <div id="s7b"></div>
@@ -276,10 +285,19 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
           <a href="./11-duCoup.png"><img src="./11-duCoup.png{{sizeImg}}" alt="If you see this, no one said 'Du coup' in this conversation." width={{widthImg}}> </a>
           <figcaption>Fig. 7b: Du coup, how often do participants said 'Du coup'?</figcaption>
         </figure> 
+
+      <div id="s7c"></div>
+        <p><i>Time To Reply (or TTR) is an interesting data. Too much values on the left may show a participant a bit too much on Messenger. On the other hand, more values above 1d may refer to someone not too much on one's phone (Note: if you hang out with this person and s/he's way too often on her/his phone, take that as a red flag...)</i></p>
+        <figure>
+          <a href="./12-TTR.png"><img src="./12-TTR.png{{sizeImg}}" alt="TTR for you and your friend" width={{widthImg}}> </a>
+          <figcaption>Fig. 7c: TTR</figcaption>
+        </figure>
+
       <hr />
+
     <div id="end"></div>
     <h3>Notes</h3>
-    <p>If you read this, it means this report have been interesting. Thank you for having read everything :) <br />
+    <p>If you read this, it means this report has been interesting. Thank you for having read everything :) <br />
     Even if the data are a direct interpretation of your logs, do not take that for an absolute truth. </p><br />
     Here are points that might alter these information (and notes):
     <ul>
@@ -288,8 +306,17 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
       <li>One data can have different meanings. Keep a critical point of view on the results.</li>
       <li>If you do something bad with these results, I won't be held responsible. </li>
       <li>Thank you to <a href="https://thebestmotherfucking.website/">the Best Motherfucking Website</a> for giving tips on this HTML page!</li>
+      <li>Also, thank you to <a href=https://redd.it/9uqn2x>the</a> <a href=https://redd.it/7xicua>Reddit</a> <a href=https://redd.it/8gpgx8>users</a> <a href=https://redd.it/7zx9me>for</a> <a href=https://redd.it/8mrpmp>giving</a> <a href=https://redd.it/af7moj>me</a> <a href=https://redd.it/af9i7p>a</a> <a href=https://redd.it/aiahpx>lot</a> <a href=https://redd.it/af6j08>of</a> <a href=https://redd.it/64fbyy>inspiration</a>.</li>
       <li>Other functionalities will be added. Don't forget to check regularly my <a href="https://github.com/bob65536">GitHub</a> for bugfixes.</li>
     </ul>
-    <br /><br /><p class=date>Last update of this template: 2019-01-08 0:05 // Done with &#x1f497; <small>and with the [F5] key</small> by Bob Sleigh // Report generated on {{genTime}} seconds.</p>
+    <div id="footnotes"></div>
+    <h4>Footnotes</h4>
+    <ul>
+      <li>[1]: A new conversation is counted if there are no messages sent in the last {{endConvDelay}}.<a href="#squares">Return to the beginning</a> or <a href="#s6">return to the graph</a>.</li></li>
+      <li>[2]: Is counted as a heart any emoji (not the reactions) in this list: &#x1f60d; &#x1f618; &#x1f617; &#x1f619; &#x1f61a; &#x1f444; &#x1f63b; &#x1f63d; &#x1f493; &#x2764; &#x1f494; &#x1f495; &#x1f496; &#x1f497; &#x1f498; &#x1f499; &#x1f49a; &#x1f49b; &#x1f49c; &#x1f49d; &#x1f49e; &#x1f49f; <br />
+      <a href="#squares">Return to the beginning</a> or <a href="#s6">return to the graph</a>.</li>
+      <li>[3]: Time Spent is the sum of time differences between messages, if this time is smaller than 5 minutes. Example: the log consists of three messages at 12:00, 12:12 and 12:13. Here, Time Spent = 1 min.<a href="#squares">Return to the beginning.</li></li> 
+    </ul>
+    <br /><br /><p class="date">Last update of this template: 2019-01-22 11:55 // Done with &#x1f497; <small>and with the [F5] key</small> by Bob Sleigh // Report generated on {{genTime}} seconds.</p>
 </body>
 </html>

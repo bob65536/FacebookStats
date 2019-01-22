@@ -18,4 +18,6 @@ Step 3: Run the script: `python makeStats.py` and wait. Usually, it takes betwee
 
 The results can be found on `./resAnalysis/stats.html`. If you wish to save the report, either export it on PDF or save the folders *html* and *resAnalysis*. Otherwise, pictures won't show.  
 
+Note (not important) about the authors: I am not a master in GitHub (yet!) so different names appear: Easley is the name of my computer and Bob Sleigh is a nickname. Both (and bob65536) are the same person.  
+
 More information will be provided later.
