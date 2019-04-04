@@ -1,5 +1,7 @@
 # Facebook_Stats
-Do you want to make stats about your conversations with your friends on Messenger? I have what you need!
+Do you want to make stats about your conversations with your friends on Messenger? I have what you need!  
+
+The result will be a HTML page, just like this [example](https://wsassi.perso.centrale-marseille.fr/visible/FacebookStats/Demo/resAnalysis/stats.html).
 
 Step 1: Request a copy of your data (https://www.facebook.com/settings?tab=your_facebook_information).  
 Step 2: Select the date range you wish (All of my data is great but can take more time).  
@@ -20,4 +22,5 @@ The results can be found on `./resAnalysis/stats.html`. If you wish to save the 
 
 Note (not important) about the authors: I am not a master in GitHub (yet!) so different names appear: Easley is the name of my computer and Bob Sleigh is a nickname. Both (and bob65536) are the same person.  
 
-More information will be provided later.
+More features to come!
+
