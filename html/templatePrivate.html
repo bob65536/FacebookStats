@@ -27,8 +27,10 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
 	Here are some stats about your interaction with [<i>{{name}}</i>]. <br />
   <p><i>Data gathered from <b>{{firstMsgShort}}</b> to <b>{{lastMsgShort}}</b>.</i> <br />
 
-  First message written on {{firstMsg}} by <i>{{nameFirst}}</i>. <br />
-  Last message written on {{lastMsg}} by <i>{{nameLast}}</i>.</p>
+  > First message written on {{firstMsg}} by <i>{{nameFirst}}</i>. <br />
+  > Last message written on {{lastMsg}} by <i>{{nameLast}}</i>. <br />
+  > Participants said <i>'Du coup'</i> <a href="#s9b">{{nbDuCoup}}</a> times. <br />
+  > Overall, <i>{{totalTimeConvShort}}</i> were spent in this conversation. <a href="#footnotes"><sup>[3]</sup></a> </p>
   
   <h3>Summary</h3>
   To jump to your favorite section, here is a summary. Touching a square will bring you to the section in question. Otherwise, feel free to scroll. 
@@ -121,32 +123,33 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
     </a>
   </div>
   <div class="square">
-    <a href="#s8b">
+    <a href="#s7">
       <div class="content">
           <div class="table">
               <div class="table-cell">
-                  <div class="nb">{{nbDuCoup}}</div>
-                  <div class="unit">Du Coup</div>
+                  <div class="nb">{{ratioConvTotal}}%</div>
+                  <div class="unit">Activity Conv<sup> [4]</sup></div>
               </div>
           </div>
       </div>
     </a>
   </div>
   <div class="square">
-    <a href="#start">
+    <a href="#s8">
       <div class="content">
           <div class="table">
               <div class="table-cell">
-                  <div class="nb">{{totalTimeConvShort}}</div>
-                  <div class="unit">Time Spent<sup> [3]</sup></div>
+                  <div class="nb">{{nbMedia}}</div>
+                  <div class="unit">Media Sent</div>
               </div>
           </div>
       </div>
     </a>
   </div>
     <br />
-      <p>[1],[2]: See <a href="#footnotes">end of the page.</a>  <br />
-      [3] Time spent is the time people stayed on this conversation. Methods of calculation: see <a href="footnotes">footnotes</a>.</p>
+      <p>[1],[2]: See <a href="#footnotes">end of the page.</a> <br />
+      [3] Time spent is the time people stayed on this conversation. Methods of calculation: see <a href="#footnotes">footnotes</a>.<br />
+      [4] A conversation is said active when at least one message had been sent in the last {{endConvDelay}}.</p>
     <hr />
     <h3>Figures</h3>
       <h6>My favorite part ;) </h6>
@@ -251,10 +254,9 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
       <div id="s6"></div>
       <h4>Section 6: Starters and Lovers</h4>
         <p>If you are with someone (wowowo, relax! It is just an example!) and you start questioning the reciprocity of your relationship, this section <strong>might</strong> help you (but keep a critical point of view, please) -- see end note. </p>
-        <br />
         <figure>
           <a href="./08-behaviorStats.png"><img src="./08-behaviorStats.png{{sizeImg}}" alt="Starters and number of hearts" width={{widthImg}}> </a>
-          <figcaption>Fig. 6: How often do you start conversations and who sends hearts?</figcaption>
+          <figcaption>Fig. 6: How often do you start conversations and who sends hearts (or any emoji mentionned in <a href="#footnotes">[1]</a>)?</figcaption>
         </figure>
         <p><i>How long are your messages on average before ending? A big figure may underline a long and interesting conversation.</i><br />
         In this case, each one of the {{nbConv}} coversations lasted <b>{{lenMsgConv}}</b> messages (on average) before dying.</p>
@@ -264,7 +266,6 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
       <h4>Section 7: Short-term analysis and Timing</h4>
         <p>Sometimes, you can realize that your friend (or you) always starts the <abbr title="Reminder: a conversation is a set of exchanged messages where you replied within 24h - See note [1]">conversations</abbr> and that would be better if this trend changes. This section will offer you an analysis on the last {{nbBarsFig13}} conversations, especially data about:</p>
         <ul>
-          <li></li>
           <li>Who starts the {{nbBarsFig13}} last conversations</li>
           <li>Duration of these <abbr title="Reminder: a conversation is a set of exchanged messages where you replied within 24h - See note [1]">conversations</abbr> (and time between them: the "silences")</li>
           <li>Time to reply for each participant</li>
@@ -274,7 +275,7 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
           <a href="./13a-lastConv.png"><img src="./13a-lastConv.png{{sizeImg}}" alt="Length of the last conversations and who started them" width={{widthImg}}> </a>
           <figcaption>Fig. 7a: Length of conversations (nb of messages exchanged)</figcaption>
         </figure>
-        <!-- TODO A little word about data to display (percentages, nnames, etc)-->
+        <!-- TODO A little word about data to display (percentages, names, etc)-->
 
       <div id="s7b"></div>
         <p><i>If you prefer considering the duration of your exchanges (instead of the number of messages sent), take a look here. Colors used are the same as the previous graph. </i></p>
@@ -289,7 +290,7 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
           <a href="./13c-lastConvSilence.png"><img src="./13c-lastConvSilence.png{{sizeImg}}" alt="Duration of silences" width={{widthImg}}> </a>
           <figcaption>Fig. 7c: Duration of silences</figcaption>
         </figure>  
-          <!-- TODO the chat was live at (sumDuration/(sumDuration+sumSilences)) %  -->
+        <p>Info: The chat was alive {{ratioConvTotal}} % of the time.</p>
 
       <div id="s7d"></div>
         <p><i>Time To Reply (or TTR) is an interesting data. Too much values on the left may show a participant a bit too much on Messenger. On the other hand, more values above 1d may refer to someone not too much on one's phone (Note: if you hang out with this person and s/he's way too often on her/his phone, take that as a red flag...)</i></p>
@@ -300,14 +301,46 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
 
       <hr />
       <div id="s8"></div>
-      <h4>Section 8: Misc</h4>
+      <h4>Section 8: Medias shared and actions</h4>
+        <p>Messages are one thing. But what about other medias and actions?</p>
+        You can exchange pics, videos as well as kicking people or inviting them on the group. <br />
+        Enough said, you want figures and so do I! <br />
+        <u>In this group, there were, until {{lastMsgShort}}:</u>
+        <ul>
+          <li><b>{{nbPics}} pictures</b> sent, plus <b>{{nbGIFS}} GIFs</b> and <b>{{nbStickers}} stickers</b>;</li>
+          <li><b>{{nbVids}} videos</b> shared;</li>
+          <li><b>{{nbAudioMsg}} audio messages</b> exchanged;</li>
+          <li><b>{{nbLinks}} links</b> given;</li>
+          <li><b>{{nbDocs}} files</b> shared;</li>
+          <li><b>{{nbCalls}} calls</b> passed;</li>
+          <li><b>{{nbChgNick}} nickname</b> attributed;</li>
+          <li><b>{{nbWaves}} waves</b> (does anyone use that?);</li>
+          <li>A bit of self-censorship: <b>{{nbBlank}} messages</b> removed;</li>
+          <li>And <b>{{nbMsgRegular}} regular text messages</b>, without anything described above.</li>
+        </ul>
+        <p><i>This graph shows the percentage of each medias shared, per person.</i> <br />
+        <figure>
+          <a href="./14a-mediaShared.png"><img src="./14a-mediaShared.png{{sizeImg}}" alt="Medias shared (vids, pics, etc)" width={{widthImg}}> </a>
+          <figcaption>Fig. 8a: Medias shared</figcaption>
+        </figure>
+
+      <div id="s8b"></div>
+        <p><i>And below, the percentage of each action done, per person <del>in order to better judge people</del>.</i> <br />
+        <p><i>Why is that in two parts? Because.</i></p>
+        <figure>
+          <a href="./14b-actionsDone.png"><img src="./14b-actionsDone.png{{sizeImg}}" alt="Actions done (calling, customizing conversation, etc)" width={{widthImg}}> </a>
+          <figcaption>Fig. 8b: Actions done</figcaption>
+        </figure>
+
+      <hr />
+      <div id="s9"></div>
+      <h4>Section 9: Misc</h4>
         <p>Here, I listed some interesting graphes which do not fit in any section.</p>
         In there, you will find info about:
         <ul>
           <li>Length of silences in the long term</li>
           <li>How many 'Du coup' are said</li>
           <li>[TODO] Self-forgetful or self-centered? xxxxx</li>
-          <li>[TODO] Other medias exchanged (links, pics, etc)</li>
           <li><i>And others... tomorrow</i></li>
         </ul>
         <p><i>This graph shows the evolution of silence periods between conversations (above {{endConvDelay}}). If the line is rising, this might show a loss of interest over time...<br />
@@ -315,30 +348,31 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
         Info: Longest silence: <b>{{silenceTime}}</b>.</p>
         <figure>
           <a href="./10-lengthOfSilences.png"><img src="./10-lengthOfSilences.png{{sizeImg}}" alt="Length of silences" width={{widthImg}}> </a>
-          <figcaption>Fig. 8a: Length of silences (long-term)</figcaption>
+          <figcaption>Fig. 9a: Length of silences (long-term)</figcaption>
         </figure>
 
-      <div id="s8b"></div>
+      <div id="s9b"></div>
         <p>Du coup<i> (or 'so...') is a French expression said too much times. So much that some might be bothered by this expression. </i>Du coup, <i>how often do participants said that?</i></p>
         <figure>
           <a href="./11-duCoup.png"><img src="./11-duCoup.png{{sizeImg}}" alt="If you see this, no one said 'Du coup' in this conversation." width={{widthImg}}> </a>
-          <figcaption>Fig. 8b: Du coup, how often do participants said 'Du coup'?</figcaption>
+          <figcaption>Fig. 9b: Du coup, how often do participants said 'Du coup'?</figcaption>
         </figure> 
 
-      <div id="s8c"></div>
+<!--
+      <div id="s9c"></div>
         <p><i>[TODO] If you realize you talk too much about you, this graph will confirm (or not) this assertion. </i></p>
         <figure>
           <a href="./14-xxxxx.png"><img src="./14-xxxxx.png{{sizeImg}}" alt="xxxxx" width={{widthImg}}> </a>
           <figcaption>Fig. 8c: xxxxx</figcaption>
         </figure>
 
-      <div id="s8d"></div>
+      <div id="s9d"></div>
         <p><i>[TODO] Sometimes, a picture worths a thousand of words... lorem ipsum... </i></p>
         <figure>
           <a href="./15-xxxxx.png"><img src="./15-xxxxx.png{{sizeImg}}" alt="xxxxx" width={{widthImg}}> </a>
-          <figcaption>Fig. 8d: xxxxx</figcaption>
+          <figcaption>Fig. 9d: xxxxx</figcaption>
         </figure>
-
+-->
       <hr />
 
     <div id="end"></div>
@@ -362,7 +396,8 @@ a few GIF on The Coding Life and two unanswered messages to friends on Messenger
       <li>[2]: Is counted as a heart any emoji (not the reactions) in this list: &#x1f60d; &#x1f618; &#x1f617; &#x1f619; &#x1f61a; &#x1f444; &#x1f63b; &#x1f63d; &#x1f493; &#x2764; &#x1f494; &#x1f495; &#x1f496; &#x1f497; &#x1f498; &#x1f499; &#x1f49a; &#x1f49b; &#x1f49c; &#x1f49d; &#x1f49e; &#x1f49f; <br />
       <a href="#squares">Return to the beginning</a> or <a href="#s6">return to the graph</a>.</li>
       <li>[3]: Time Spent is the sum of time differences between messages, if this time is smaller than 5 minutes. Example: the log consists of three messages at 12:00, 12:12 and 12:13. Here, Time Spent = 1 min. <a href="#squares">Return to the beginning.</a></li> 
+      <li>[4]: About the activity of the conversation: it does not concern only these graphes in section 7 but all data, since the start of the conversation. This data should be considered with care: if you send only one message every 23 hours, this number will be equal to 100%...</li>
     </ul>
-    <br /><br /><p class="date">Last update of this template: 2019-01-22 11:55 // Done with &#x1f497; <small>and with the [F5] key</small> by Bob Sleigh // Report generated on {{genTime}} seconds.</p>
+    <br /><br /><p class="date">Last update of this template: 2019-05-08 23:20 // Done with &#x1f497; <small>and with the [F5] key</small> by Bob Sleigh // Report generated on {{genTime}} seconds.</p>
 </body>
 </html>
