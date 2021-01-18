@@ -44,8 +44,9 @@ decoding = 'utf-8'                      # To interpret accent words from json, u
 pathRes = "resAnalysis"                 # In the end, we will have ~25 files: get them in a folder
 customTitle=u"Stats of xxx"             # The title you want (add xxx for inserting name of the conversation)
 endConvDelay = 86400                    # Delay before considering a conversation closed (in sec). 86400 s = 1 day
-# Below this line: do NOT edit unless you know what you do!
-####################
+#########################################
+
+
 startTimeStamp = (startDate - dt.datetime(1970,1,1)).total_seconds()-timeZoneStartTime*3600
 endTimeStamp = (endDate - dt.datetime(1970,1,1)).total_seconds()-timeZoneStartTime*3600
 # Opening and using the JSON file(s)
@@ -71,9 +72,9 @@ else:
 #%%
     
 ###### Functions ######
-def addList(L1, L2):
-    # Sums values of each member of a list
-    if (len(L1)==len(L2)):
+def sumTwoLists(L1, L2):
+    """Sums values of each member of a list"""
+    if (len(L1) == len(L2)):
         N = len(L1)
         res = [0]*N
         for i in range(N):
@@ -83,7 +84,7 @@ def addList(L1, L2):
         print("ERROR: arguments do not have same length!")
     
 def prettyTxt(msg):
-    # Correct the unicode text to interpret accents properly
+    """Correct the unicode text to interpret accents properly"""
     return msg.encode(encoding).decode(decoding)
 
 def prettyAllTxt():
@@ -107,6 +108,11 @@ def prettyAllTxt():
         listPeople[i] = prettyTxt(listPeople[i])
   
 def makeSubplot(N):
+    """
+        Divide subplots into an optimized grid
+        in: N: number of subplots
+        out: (y,x) where x is the number of graphs in X axis and y in Y axis 
+    """
     # How to do subplots like a boss (nb, position, etc) ?
     # Check it here!
     if (N<=30):
@@ -136,6 +142,7 @@ def makeSubplot(N):
             return (5,6)
 
 def getListPeople(data, numberPeople):
+    """Get list of participants in a FB conversation (returns a list containing all names)"""
     ppl=[]
     for i in range(numberPeople):
         # print ppl
@@ -614,6 +621,18 @@ def saveReportToHtml():
     html_file = open(pathRes+'/stats.html', 'wb')
     html_file.write(outputText.encode(encoding))
     html_file.close()
+
+
+###### Adaptation from WhatsApp
+# Convert data from WA to things usable by this program (a refactoring is planned, I promise)
+
+def TZtoTimestamp_ms(TZdata):
+    """Convert data in TZ format ("2020-03-14T15:09:26Z") into timestamp in milliseconds (1584194966000)"""
+    dtFormat = dt.datetime.strptime(TZdata,"%Y-%m-%dT%H:%M:%SZ") 
+    timestamp_ms = dt.datetime.timestamp(dtFormat)
+    return int(timestamp_ms * 1000)
+
+
 
 #%%
 
@@ -1214,7 +1233,7 @@ if nbMsgReac > 0:
         for i in range(len(y[0])): # For each person
             if(y[k][i]!=0): 
                 plt.text(y[k][i]/2.+offset[i], i, y[k][i], ha='center',va='center')
-        offset = addList(offset, y[k])
+        offset = sumTwoLists(offset, y[k])
     plt.legend([p[i][0] for i in range(8)], reacMean)
     plt.title("Reactions sent by participant ("+firstMsgShort+" -> "+lastMsgShort+")\nTotal = "+str(sum(reacSent))+" reactions")
     plt.savefig(pathRes+"/06a-reacSent.png", dpi=100, bbox_inches='tight')
@@ -1237,7 +1256,7 @@ if nbMsgReac > 0:
             for i in range(len(y[0])): # For each participant
                 if(y[k][i]!=0):
                     plt.text(y[k][i]/2.+offset[i], i, y[k][i], ha='center',va='center')
-            offset = addList(offset, y[k])
+            offset = sumTwoLists(offset, y[k])
         plt.legend([p[i][0] for i in range(8)], reacMean)
         plt.title("Reactions received for participants ("+firstMsgShort+" -> "+lastMsgShort+")\nTotal = "+str(sum(reacReceived))+" reactions")
         plt.savefig(pathRes+"/06b-reacReceived.png", dpi=100, bbox_inches='tight')
@@ -1257,7 +1276,7 @@ if nbMsgReac > 0:
             for i in range(len(y[0])): # For each participant
                 if(y[k][i]!=0):
                     plt.text(y[k][i]/2.+offset[i], i, decimizeStr(y[k][i],2), ha='center',va='center')
-            offset = addList(offset, y[k])
+            offset = sumTwoLists(offset, y[k])
         plt.legend([p[i][0] for i in range(8)], reacMean)
         plt.title("Reactions received PER message ("+firstMsgShort+" -> "+lastMsgShort+")")
         plt.savefig(pathRes+"/06c-reacReceivedPerMsg.png", dpi=100, bbox_inches='tight')
@@ -1528,7 +1547,7 @@ if (N != 0 and nbMedia != 0): # Avoid drawing blank graphes
                 else: # Enough room to display the percentage AND the value
                     plt.text(y[i-skippedI][j]/2.+offset[j], j, str(val)+" ("+decimizeStr(y[i-skippedI][j],1)+"%)", ha='center',va='center')
             labelPerson.append(listPeople[i])
-            offset = addList(offset, tabl)
+            offset = sumTwoLists(offset, tabl)
             plt.xticks(np.arange(0,110,10))
         else:
             skippedI += 1
@@ -1567,7 +1586,7 @@ if (N != 0 and nbActions != 0): # Avoid drawing blank graphes
             y.append(tabl)
             p.append([plt.barh(graphLabel, tabl, width, color=all_colors2[i], left=offset)])
             for j in range(len(graphLabel)):
-                val = int(round(y[i-skippedI][j]/100.0*typeMessages[offsetLabelTypeMessages+7+j],0)) # A number of occurences (+7 'cause we check the actions! (from #13))
+                val = int(round(y[i-skippedI][j]/100.0*typeMessages[offsetLabelTypeMessages+7+j],0)) # A number of occurrences (+7 'cause we check the actions! (from #13))
                 percentage = y[i-skippedI][j]
                 if (percentage == 0): # No annotation
                     pass 
@@ -1576,7 +1595,7 @@ if (N != 0 and nbActions != 0): # Avoid drawing blank graphes
                 else: # Enough room to display the percentage AND the value
                     plt.text(y[i-skippedI][j]/2.+offset[j], j, str(val)+" ("+decimizeStr(y[i-skippedI][j],1)+"%)", ha='center',va='center')
             labelPerson.append(listPeople[i])
-            offset = addList(offset, tabl)
+            offset = sumTwoLists(offset, tabl)
             plt.xticks(np.arange(0,110,10))
         else:
             skippedI += 1
