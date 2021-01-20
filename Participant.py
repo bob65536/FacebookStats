@@ -4,6 +4,8 @@ In this class, we will define all the attributes a participant has
 (e.g. name, reactions sent/received, nb of messages, etc) 
 """
 
+from Toolbox import *
+
 # Global constants: Adjust them to your needs
 numberBins = 96 # How many subdivisions in a day
 
@@ -42,6 +44,8 @@ class Participant:
 
     def __str__(self):
         """ Display all the information concerning the instance """
+        return f"{self.name} has ID#{self.id}."
+
 
     def description(self):
         """ Display a bit of information about the instance """

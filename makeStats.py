@@ -25,7 +25,7 @@ import sys
 #from random import sample
 all_colors = [k for k,v in pltc.cnames.items()]
 all_colors2=["steelblue","indianred","darkolivegreen","olive","darkseagreen","pink","tomato","orangered","greenyellow","burlywood","mediumspringgreen","chartreuse","dimgray","orange","darkslategray","brown","dodgerblue","peru","lawngreen","chocolate","springgreen","crimson","forestgreen","darkgrey","cyan","darkviolet","darkgray","mediumorchid","darkgreen","darkturquoise","red","deeppink","darkmagenta","gold","hotpink","firebrick","steelblue","indianred","mistyrose","darkolivegreen","olive","darkseagreen","pink","tomato","orangered","darkslategrey","greenyellow","burlywood","seashell","mediumspringgreen","chartreuse","dimgray","black","springgreen","orange","darkslategray","brown","dodgerblue","peru","lawngreen","chocolate","crimson","forestgreen","darkgrey","cyan","mediumorchid","darkviolet","darkgray","darkgreen","darkturquoise","red","deeppink","darkmagenta","gold","hotpink","firebrick"]
-times = [time.time()] # For debug: how long each graph takes to load?
+timeToLoad = [time.time()] # For debug: how long each graph takes to load?
 
 ####################
 # User-editable variables - What you can edit, without looking for ages in the code
@@ -435,10 +435,14 @@ def totalSecondsToStrShort(seconds):
     res = res + str(mn).zfill(2) + ":" + str(sec).zfill(2) 
     return res
 
-def divideList(L, x):
-    # Self-explanatory: divise every term of L by x. 
-    # For multiplying, divide by 1/x
-    return [L[i]*1.0/x for i in range(len(L))]
+def divideList(listToDivide, denominator):
+    """Divide every term of listToDivide by denominator  
+    e.g. [10, 20, 25], 10 -> [1, 2, 2.5]"""
+    # For multiplying, divide by 1/denominator.
+    if (denominator == 0):
+        print("WARN: DIV/0. List will not be changed.")
+        denominator = 1
+    return [(itemInList * 1.0 / denominator) for itemInList in listToDivide]
 
 def makeAutopct(values):
     # Thanks to https://stackoverflow.com/questions/6170246/how-do-i-use-matplotlib-autopct
@@ -617,7 +621,7 @@ def saveReportToHtml():
                                nbPics=typeMessages[6], nbStickers=typeMessages[7], nbGIFS=typeMessages[8], nbVids=typeMessages[9], nbAudioMsg=typeMessages[10], 
                                nbLinks=typeMessages[12], nbDocs=typeMessages[11], nbCalls=typeMessages[13], nbChgNick=typeMessages[24], nbAdded=typeMessages[18], 
                                nbLeft=typeMessages[19], nbKicked=typeMessages[20], nbWaves=typeMessages[15]+typeMessages[16], nbBlank=typeMessages[14], nbMsgRegular=typeMessages[-1],
-                               nbMedia=nbMedia, nbActions=nbActions, genTime=decimizeStr(times[-1]-times[0], 3))
+                               nbMedia=nbMedia, nbActions=nbActions, genTime=decimizeStr(timeToLoad[-1]-timeToLoad[0], 3))
     html_file = open(pathRes+'/stats.html', 'wb')
     html_file.write(outputText.encode(encoding))
     html_file.close()
@@ -948,17 +952,17 @@ msgPerDayX, msgPerDayY = nbDailyMsg(hourMsgD)
 msgPerMonthX, msgPerMonthY = nbDailyMsg(hourMsgMo)
 msgPerWeekDayX = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 msgPerWeekDayY = nbWeekDayMsg(msgPerDayX, msgPerDayY) # Will be filled from msgPerDayX,Y
-times.append(time.time())
+timeToLoad.append(time.time())
 
 # Correcting the encoding before displaying everything
 prettyAllTxt()
 
-print("Process done in "+str(times[-1]-times[-2])+"+ sec")
+print("Process done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 
 if not os.path.isdir(pathRes):
    os.makedirs(pathRes)
 
-times.append(time.time())
+timeToLoad.append(time.time())
 # Display everything (or export them - up to you!)
 textFile = open(pathRes+'/Stats.txt','wb')
 #textFile = 'Stats.txt'
@@ -994,8 +998,8 @@ else:
         printToFile("> "+listPeople[1]+" talked about himself "+str(nbJe[1])+" times and about his friend(s) "+str(nbTu[1])+" times and said 'Du coup' "+str(nbDuCoup[1])+" times.", textFile)
     printToFile("> Overall, "+totalSecondsToStr(convoTimeSpent.total_seconds())+" were spent on this conversation (plus passive participation).", textFile)
 textFile.close()
-times.append(time.time())
-print("Process done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Process done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #%%
 ### Graphes     ###############################################################
 ## Cleanup!
@@ -1023,8 +1027,8 @@ else:
 plt.title("Participants of the conversation ("+firstMsgShort+" -> "+lastMsgShort+")\n")
 plt.savefig(pathRes+"/01-participants.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(2) ################################################################
 # Rule of thumb: for high values (>360), prepare a good computer (720: 2GB of RAM + 60'' CPU time, 1440: 5GB + 90'' for the program alone)
 hr=hourPost(hourMsg, nbBins)
@@ -1043,8 +1047,8 @@ plt.grid(axis='x')
 plt.title("Hourly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+")")
 plt.savefig(pathRes+"/02a-hourUse.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(2bis) #############################################################
 print("Plotting Fig. 2bis: radar graph for active hours.")
 # Taken from SO #
@@ -1062,8 +1066,8 @@ ax.yaxis.grid(True)
 plt.title("Hourly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+" - radar graph)\nTotal = "+str(sum(hr[0]))+" msg")
 plt.savefig(pathRes+"/02b-hourlyRadarGraph.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(2c) ###############################################################
 if (N <= 30):
     print("Plotting Fig. 2ter: radar graph for active hours PER user.")
@@ -1092,8 +1096,8 @@ if (N <= 30):
 else:
     removeFile(pathRes+"/02c-hourlyRadarGraphPerUser.png*")
     print("Skipping Fig. 2ter: too many users...")
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 # Fig 3         ###############################################################
 if(nbBins != 24):
     print("Plotting Fig. 3: messages per 1/4h.")
@@ -1109,8 +1113,8 @@ if(nbBins != 24):
     plt.title("More accurate hourly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+")")
     plt.savefig(pathRes+"/03a-preciseHourUse.png", dpi=100, bbox_inches='tight')
     plt.close()
-    times.append(time.time())
-    print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+    timeToLoad.append(time.time())
+    print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
     #plt.figure(3bis) #############################################################
     print("Plotting Fig. 3bis: precise radar graph for active hours.")
     # Taken from SO #
@@ -1130,8 +1134,8 @@ if(nbBins != 24):
     plt.title("Hourly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+" - radar graph)\nTotal = "+str(sum(hr[0]))+" msg!")
     plt.savefig(pathRes+"/03b-preciseRadarGraph.png", dpi=100, bbox_inches='tight')
     plt.close()
-    times.append(time.time())
-    print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+    timeToLoad.append(time.time())
+    print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 else:
     print("Fig 3 == Fig 2: ignoring.")
     removeFile(pathRes+"/03a-preciseHourUse.png*")
@@ -1153,8 +1157,8 @@ ax.yaxis.grid(True)
 plt.title("Number of empty bins: "+str(hr[1].count(0))+" / "+str(nbBins)+".\nTotal = "+str(sum(hr[0]))+" msg!", fontsize=40)
 plt.savefig(pathRes+"/04-emptyMoments.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(5a)  ###############################################################
 print("Plotting Fig. 5: daily repartition of msg.")
 plt.figure(figsize=(24,9))
@@ -1173,8 +1177,8 @@ plt.bar(msgPerDayX, msgPerDayY, width=1, alpha=.8)
 plt.title("Daily repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+")")
 plt.savefig(pathRes+"/05a-dateMsgPerDay.png", dpi=100)
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(5b)  ###############################################################
 print("Plotting Fig. 5b: monthly repartition of msg.")
 plt.figure(figsize=(12,12))
@@ -1196,8 +1200,8 @@ plt.bar(msgPerMonthX, msgPerMonthY, align='edge', width=31, alpha=1)
 plt.title("Monthly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+")")
 plt.savefig(pathRes+"/05b-dateMsgPerMonth.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(5c)  ###############################################################
 print("Plotting Fig. 5c: days of the week")
 plt.figure(figsize=(12,12))
@@ -1210,8 +1214,8 @@ plt.bar(msgPerWeekDayX, msgPerWeekDayY, align='center', width=.7, alpha=1)
 plt.title("Weekly repartition of msgs ("+firstMsgShort+" -> "+lastMsgShort+")")
 plt.savefig(pathRes+"/05c-dateMsgPerWeekDay.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(6) ###############################################################
 if nbMsgReac > 0:
     print("Plotting Fig. 6: reactions sent.")
@@ -1238,8 +1242,8 @@ if nbMsgReac > 0:
     plt.title("Reactions sent by participant ("+firstMsgShort+" -> "+lastMsgShort+")\nTotal = "+str(sum(reacSent))+" reactions")
     plt.savefig(pathRes+"/06a-reacSent.png", dpi=100, bbox_inches='tight')
     plt.close()  
-    times.append(time.time())
-    print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+    timeToLoad.append(time.time())
+    print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
     #plt.figure(6b)  ###############################################################
     if(N>2):
         print("Plotting Fig. 6b: reactions received.")
@@ -1289,8 +1293,8 @@ if nbMsgReac > 0:
 else:
     print("Skipping Fig 6 and 6b: no reactions.")
     removeFile(pathRes+"/06*")
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(7)  ###############################################################
 lenMsgPerSender, typeMessagesPerSender, reacPerMsg, nbMsgPerSender, listPeople, idPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(lenMsgPerSender, typeMessagesPerSender, reacPerMsg, nbMsgPerSender, listPeople, idPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, convStartedBySender, ignoredMessagesPerUser, avgLengthPerSender, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False)) # Get a clean ranking
 print("Plotting Fig. 7: length of msg by participants.")
@@ -1314,8 +1318,8 @@ else:
 plt.title("Participants of the conversation *by characters written* ("+firstMsgShort+" -> "+lastMsgShort+")\nTotal Length: "+str(lenMsg)+" characters")
 plt.savefig(pathRes+"/07-lenMsg.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 
 #plt.figure(8)  ###############################################################
 # This figure is special: it will show how often you start a message and how much "winds" you gave.
@@ -1371,8 +1375,8 @@ if (N != 0 and sum(convStartedBySender) != 0): # In fact, we can do that for any
 else:
     print("Skipping Fig. 8: Suitable only if there is a F2F conversation.")
     removeFile(pathRes+"/08-behaviorStats.png*")
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(9)  ##############################################################
 print("Plotting Fig. 9: average length of msg.")
 avgLengthPerSender, typeMessagesPerSender, reacPerMsg, nbMsgPerSender, listPeople, idPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart = zip(*sorted(zip(avgLengthPerSender, typeMessagesPerSender, reacPerMsg, nbMsgPerSender, listPeople, idPeople, reacSent, reacReceived, reacSentPerActor, reacReceivedPerSender, hrPerSender, lenMsgPerSender, convStartedBySender, ignoredMessagesPerUser, nbJe, nbTu, nbDuCoup, timeToReply, nbHeart), reverse=False)) # Get a clean ranking
@@ -1386,8 +1390,8 @@ for i in range(startList, N2):
 plt.title("Average length of each message ("+firstMsgShort+" -> "+lastMsgShort+")")
 plt.savefig(pathRes+"/09-lengthOfMsg.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(10)  ##############################################################
 print("Plotting Fig. 10: Length of long silences")
 plt.figure(figsize=(12,10))
@@ -1396,8 +1400,8 @@ plt.plot(silenceArray[0][:1:-1], toDaysArray(silenceArray[1][:1:-1]))
 plt.title("Length of silences (in days -- "+firstMsgShort+" -> "+lastMsgShort+")")
 plt.savefig(pathRes+"/10-lengthOfSilences.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(11)  ##############################################################
 if(sum(nbDuCoup) > 0):
     print("Plotting Fig. 11: Du coup...")
@@ -1416,8 +1420,8 @@ if(sum(nbDuCoup) > 0):
 else:
     print("Skipping Fig. 11: No 'Du coup' said")
     removeFile(pathRes+"/11*")  
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(12)  ##############################################################
 #print("Plotting Fig. 12: Time to reply")
 if (N2 <= 8):
@@ -1446,8 +1450,8 @@ if (N2 <= 8):
 else:
     removeFile(pathRes+"/12*")
     print("Skipping Fig. 12: too many users...")
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(13)  ##############################################################
 print("Plotting Fig. 13a: About the last conversations / Length") # There are simpler ways to do it but here is the code from my sleep-deprived brain
 # Extend the list of colors 
@@ -1477,8 +1481,8 @@ plt.legend(legend1,legend2)
 # Explanations: for the legend, I take only one bar per person (the first one... if it exists, hence the try/except)
 plt.savefig(pathRes+"/13a-lastConv.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 ###############################################################################
 print("Plotting Fig. 13b: About the last conversations / Duration") # There are simpler ways to do it but here is the code from my sleep-deprived brain
 fig=plt.figure(figsize=(12,12))
@@ -1495,8 +1499,8 @@ plt.legend(legend1,legend2)  # The same legend as Fig 13a
 # Explanations: for the legend, I take only one bar per person (the first one... if it exists, hence the try/except)
 plt.savefig(pathRes+"/13b-lastConvDuration.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 ###############################################################################
 print("Plotting Fig. 13c: About the last conversations / Time between conv (silences)") # There are simpler ways to do it but here is the code from my sleep-deprived brain
 fig=plt.figure(figsize=(12,12))
@@ -1510,8 +1514,8 @@ ax.set_xticks(range(nbBarsFig13)) # One tick for each bar
 ax.set_xticklabels([]+[str(nbBarsFig13)+"\nconv ago"]+list(reversed(range(2,nbBarsFig13)))+["Last\nconv"]) # Custom axis, way more class ;) 
 plt.savefig(pathRes+"/13c-lastConvSilence.png", dpi=100, bbox_inches='tight')
 plt.close()
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(14a)  #############################################################
 matplotlib.rcParams['font.size'] = 13
 nbMedia = sum(typeMessages[offsetLabelTypeMessages:offsetLabelTypeMessages+7])
@@ -1558,8 +1562,8 @@ if (N != 0 and nbMedia != 0): # Avoid drawing blank graphes
 else:
     removeFile(pathRes+"/14a*")
     print("Skipping Fig. 14a: No other media sent")
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 #plt.figure(14b)  #############################################################
 #%%
 nbActions = sum(typeMessages[offsetLabelTypeMessages+7:-2])
@@ -1606,8 +1610,8 @@ if (N != 0 and nbActions != 0): # Avoid drawing blank graphes
 else:
     removeFile(pathRes+"/14b*")
     print("Skipping Fig. 14b: No actions done...")
-times.append(time.time())
-print("Fig done in "+str(times[-1]-times[-2])+"+ sec")
+timeToLoad.append(time.time())
+print("Fig done in "+str(timeToLoad[-1]-timeToLoad[-2])+"+ sec")
 ###############################################################################
 #%%
 try:
@@ -1628,6 +1632,6 @@ try:
     saveReportToHtml()
 except ImportError:
     print("/!\\ Jinja lib is not found. You should install it with 'pip install jinja' (no need to have admin rights)")
-times.append(time.time())
-print("~ Analysis done with love in "+decimizeStr(times[-1]-times[0], 3)+" seconds! ~")
+timeToLoad.append(time.time())
+print("~ Analysis done with love in "+decimizeStr(timeToLoad[-1]-timeToLoad[0], 3)+" seconds! ~")
 ###### END OF PROGRAM ######

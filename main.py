@@ -1,12 +1,18 @@
 """
-Main program.
+Main program. 
 """
 
-from Participant import *
+import Participant
+import P2P_Chat
+from Toolbox import *
 
-user1 = Participant("John Smith", 1)
+# Create an instance with the chat in question
+# TODO Add path to logs
+chatToAnalysis = P2P_Chat.P2PChat()
 
-print(user1.nbTotalMessages['nbWords'])
-print(user1.description())
+# Just to give a fancy name!
+chatToAnalysis.setNameChat(f"My chat with {chatToAnalysis.friend.name}: Analysis")
 
-print(user1)
+# test
+print(chatToAnalysis)
+
