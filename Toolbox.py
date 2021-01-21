@@ -4,6 +4,7 @@ All the functions you need are here!
 """
 
 import datetime as dt
+import pytz
 
 # General Settings used in the whole project
 encoding = 'latin1'                     # If there are accents (for French people), this encoding works fine. 
@@ -56,6 +57,24 @@ def TZtoTimestamp_ms(TZdata):
     timestamp_ms = dt.datetime.timestamp(dtFormat)
     return int(timestamp_ms * 1000)
 
+
+def isDST(date=None, timezone="Europe/Paris"):
+    """ Tells if date is on DST or not """
+    if date is None:
+        date = dt.datetime.utcnow()
+    timezone = pytz.timezone(timezone)
+    timezone_aware_date = timezone.localize(date, is_dst=None)
+    return timezone_aware_date.tzinfo._dst.seconds != 0
+
+
+def getUTCOffset(date):
+    """ Get timezone for any date (available for continental France! Change it below if not the case) """
+    if isDST(date, "Europe/Paris"):
+        return 2
+    else:
+        return 1
+
+
 ### For Matplotlib and plotting nice figures ###
 
 def makeSubplot(N):
@@ -89,3 +108,11 @@ def makeSubplot(N):
             return (5,5)
         if((N>= 26) and (N<=30)):
             return (5,6)
+
+# Extracting data
+def getListPeople(data):
+    """Get list of participants in a FB conversation (returns a list containing all names)"""
+    ppl=[]
+    for person in data['participants']:
+        ppl += [person['name']]
+    return ppl

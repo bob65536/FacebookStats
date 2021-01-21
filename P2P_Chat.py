@@ -30,34 +30,66 @@ class P2PChat():
     #: Time after sending a message before being considered as inactive (in sec)
     timeoutActivity_s = 300
 
+    #: When to start and end the analysis
+    startTimeStamp = dt.datetime(2000,1,1)
+    endTimeStamp = dt.datetime(2099,1,1)
 
-    def __init__(self, friendName="Alice", yourName="Bob", title="Chat analysis"):
+    def __init__(self):
         """
         Define participants in this chat (you can overwrite placeholder names, with friendName, yourName and title)  
         ID will be useful for getting the author for WA mesages (field 'fromMe')
         """
-        self.friend = Participant.Participant(friendName, 0)
-        self.myself = Participant.Participant(yourName, 1)
-        self.title = title
+        self.friend = Participant.Participant("Alice", 0)
+        self.myself = Participant.Participant("Bob", 1)
+        self.title = "A great chat: analysis"
+        self.totalActiveTime_s = 0 # Time spent on chat (in sec)
 
-    def __str__(self):
-        """Display a quick summary of the chat"""
-        description = f"This P2P chat has two particpants: {self.friend.name} and you ({self.myself.name}).\n" + \
-            f"The name of the report is [{self.title}]."
-        return description
+    # def __str__(self):
+    #     """Display a quick summary of the chat"""
+    #     description = f"This P2P chat has two particpants: {self.friend.name} and you ({self.myself.name}).\n" + \
+    #         f"The name of the report is [{self.title}]."
+    #     return description
+
 
     def setNameChat(self, newName):
         self.title = newName
-    
+
     def getLogsFB(self, logFileFB):
         """Extract logs from Messenger (logFileFB is a path)"""
         if sys.version_info[0] == 2: # For Python2 (discouraged)
             import io
             with io.open(logFileFB, 'r') as f:
-                self.chatContent_json = json.load(f)
+                self.fbChatContent_json = json.load(f)
         else:
             with open(logFileFB, 'r', encoding=encoding) as f:
-                self.chatContent_json = json.load(f)
+                self.fbChatContent_json = json.load(f)
+        
+        # Extract data (do it in another function)
+        # self.loadJsonDataFB()
+
+
+    def loadJsonDataFB(self):
+        """ Fetch data from json file. Run this after getLogsFB (for group conversations) """
+        self.nameChatFB = self.fbChatContent_json['title']
+        self.numberParticipants = len(self.fbChatContent_json['participants'])
+        self.listParticipants = getListPeople(self.fbChatContent_json)
+        self.totalNumberMessages = len(self.fbChatContent_json['messages'])
+        # self.typeOfChat = self.fbChatContent_json['thread_type'] # Regular (this case) or RegularGroup
+        if (self.numberParticipants == 2):
+            # We are in a F2F chat. Overwrite names.
+            self.friend.name = self.fbChatContent_json['participants'][0]
+            self.myself.name = self.fbChatContent_json['participants'][1]
+        messageToPrint = f"JSON loading done. \n\
+    > Chat name: {self.nameChatFB}\n\
+    > Nb of participants: {self.numberParticipants}: {self.listParticipants}\n\
+    > Nb of messages: {self.totalNumberMessages}."
+        print(messageToPrint) # Do it for debug
+
+    def doTheAnalysisFB(self):
+        """ Go through each message to do the analysis """
+        for m in self.fbChatContent_json['messages']:
+            break # WIP
+
 
 
     def getLogsWA(self, logFileWA):
